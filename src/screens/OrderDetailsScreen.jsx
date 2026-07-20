@@ -40,15 +40,18 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack }) {
   const [voucherState, setVoucherState] = useState(null) // null | 'invalid' | number (rate)
 
   const isInspection = booking.variant === 'inspection'
+  const isMaintenance = booking.variant === 'maintenance'
 
   // What is being paid for depends on the flow:
   //  - inspection booking -> only the provider's inspection visit fee
+  //  - maintenance        -> the services the inspector found (price update)
   //  - direct booking     -> the selected AC services
+  const serviceCounts = isMaintenance ? booking.found : counts
   const items = isInspection
     ? [{ label: 'Inspection visit', qty: 1, price: booking.price }]
     : [
-        { label: 'Ac refilling', qty: counts.refill, price: counts.refill * AC_PRICE_PER_UNIT },
-        { label: 'Ac Cleaning', qty: counts.clean, price: counts.clean * AC_PRICE_PER_UNIT },
+        { label: 'Ac refilling', qty: serviceCounts.refill, price: serviceCounts.refill * AC_PRICE_PER_UNIT },
+        { label: 'Ac Cleaning', qty: serviceCounts.clean, price: serviceCounts.clean * AC_PRICE_PER_UNIT },
       ].filter((it) => it.qty > 0)
 
   const subtotal = items.reduce((sum, it) => sum + it.price, 0)
@@ -110,8 +113,8 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack }) {
         </div>
       </div>
 
-      {/* Progress (inspection flow only): inspection booked -> pay */}
-      {isInspection && (
+      {/* Progress (inspection/maintenance flows): inspection -> pay */}
+      {(isInspection || isMaintenance) && (
         <div className="mt-6 flex items-center px-2">
           <div className="flex flex-col items-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#8442FF]">

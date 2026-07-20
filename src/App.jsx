@@ -5,6 +5,7 @@ import HomeScreen from './screens/HomeScreen.jsx'
 import AcServiceScreen from './screens/AcServiceScreen.jsx'
 import ProvidersScreen from './screens/ProvidersScreen.jsx'
 import OrderDetailsScreen from './screens/OrderDetailsScreen.jsx'
+import OrderTrackingScreen from './screens/OrderTrackingScreen.jsx'
 import SuccessScreen from './screens/SuccessScreen.jsx'
 
 // AC customer flow:
@@ -58,10 +59,29 @@ function App() {
       <OrderDetailsScreen
         booking={booking}
         counts={counts}
-        onBack={() => setScreen(booking?.variant === 'inspection' ? 'inspection' : 'providers')}
+        onBack={() =>
+          setScreen(
+            booking?.variant === 'maintenance'
+              ? 'tracking'
+              : booking?.variant === 'inspection'
+                ? 'inspection'
+                : 'providers',
+          )
+        }
         onPay={(total) => {
           setBooking({ ...booking, total })
           setScreen('success')
+        }}
+      />
+    ),
+    tracking: (
+      <OrderTrackingScreen
+        booking={booking}
+        counts={counts}
+        onBack={() => setScreen('home')}
+        onProceedToPay={(found) => {
+          setBooking({ ...booking, variant: 'maintenance', found })
+          setScreen('orderDetails')
         }}
       />
     ),
@@ -70,6 +90,7 @@ function App() {
         total={booking?.total}
         variant={booking?.variant}
         onDone={() => setScreen('home')}
+        onTrack={() => setScreen('tracking')}
       />
     ),
   }
