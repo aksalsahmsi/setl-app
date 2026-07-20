@@ -1,0 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&family=League+Spartan:wght@400;600;700&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-poppins: 'Poppins', sans-serif;
+  --font-inter: 'Inter', sans-serif;
+  --font-league-spartan: 'League Spartan', sans-serif;
+
+  /* Setl brand colors */
+  --color-setl-purple: #8442ff;
+  --color-setl-blue: #366ee9;
+  --color-setl-pink: #f15cfa;
+}
+
+/* Light gray backdrop so the 375px phone frame stands out on desktop */
+body {
+  margin: 0;
+  background: #e9e9ec;
+}
