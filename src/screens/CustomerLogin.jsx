@@ -4,9 +4,16 @@ import UAEFlag from '../components/UAEFlag.jsx'
 
 export default function CustomerLogin({ onContinue }) {
   const [phone, setPhone] = useState('')
+  const [error, setError] = useState('')
 
   function handleSubmit(e) {
     e.preventDefault()
+    // UAE mobile numbers: 9 digits starting with 5 (e.g. 501234567)
+    if (!/^5\d{8}$/.test(phone)) {
+      setError('Please enter a valid UAE mobile number (9 digits, starts with 5)')
+      return
+    }
+    setError('')
     onContinue(phone)
   }
 
@@ -54,11 +61,15 @@ export default function CustomerLogin({ onContinue }) {
             autoComplete="tel"
             placeholder="50*******"
             value={phone}
-            onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+            onChange={(e) => {
+              setPhone(e.target.value.replace(/\D/g, ''))
+              setError('')
+            }}
             maxLength={9}
             className="font-inter w-full bg-transparent text-[15px] text-black outline-none placeholder:text-[#817777]/70"
           />
         </div>
+        {error && <p className="mt-2 text-xs text-red-500">{error}</p>}
 
         <button
           type="submit"

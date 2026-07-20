@@ -5,13 +5,25 @@ const OTP_LENGTH = 5
 
 export default function OtpScreen({ onVerify }) {
   const [digits, setDigits] = useState(Array(OTP_LENGTH).fill(''))
+  const [error, setError] = useState('')
   const inputsRef = useRef([])
+
+  function handleVerify() {
+    const code = digits.join('')
+    if (code.length < OTP_LENGTH) {
+      setError(`Please enter the ${OTP_LENGTH}-digit code`)
+      return
+    }
+    setError('')
+    onVerify(code)
+  }
 
   function handleChange(i, value) {
     const digit = value.replace(/\D/g, '').slice(-1)
     const next = [...digits]
     next[i] = digit
     setDigits(next)
+    setError('')
     if (digit && i < OTP_LENGTH - 1) inputsRef.current[i + 1]?.focus()
   }
 
@@ -53,7 +65,9 @@ export default function OtpScreen({ onVerify }) {
         ))}
       </div>
 
-      <GradientButton className="mt-10" onClick={() => onVerify(digits.join(''))}>
+      {error && <p className="mt-3 text-center text-xs text-red-500">{error}</p>}
+
+      <GradientButton className="mt-10" onClick={handleVerify}>
         Verify
       </GradientButton>
 

@@ -20,6 +20,7 @@ function App() {
         provider,
         date,
         time,
+        variant,
         price: variant === 'inspection' ? provider.inspectionFee : provider.bookingFee,
       })
       setScreen('orderDetails')
@@ -57,13 +58,20 @@ function App() {
       <OrderDetailsScreen
         booking={booking}
         counts={counts}
+        onBack={() => setScreen(booking?.variant === 'inspection' ? 'inspection' : 'providers')}
         onPay={(total) => {
           setBooking({ ...booking, total })
           setScreen('success')
         }}
       />
     ),
-    success: <SuccessScreen total={booking?.total} onDone={() => setScreen('home')} />,
+    success: (
+      <SuccessScreen
+        total={booking?.total}
+        variant={booking?.variant}
+        onDone={() => setScreen('home')}
+      />
+    ),
   }
 
   return (

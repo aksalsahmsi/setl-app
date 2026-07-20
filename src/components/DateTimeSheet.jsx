@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { DATES, TIMES } from '../data/providers.js'
+import { getDates, TIMES } from '../data/providers.js'
+
+const DATES = getDates()
 
 // Bottom sheet for picking a date + time (used for inspections and bookings).
 export default function DateTimeSheet({ provider, title, onConfirm, onClose }) {

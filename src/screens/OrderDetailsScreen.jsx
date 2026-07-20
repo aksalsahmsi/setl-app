@@ -8,6 +8,9 @@ const PAYMENT_METHODS = [
   { id: 'card', label: 'Card pay' },
 ]
 
+// Demo voucher: SETL10 gives an extra 10% off
+const VOUCHERS = { SETL10: 0.1 }
+
 function PayIcon({ id }) {
   if (id === 'apple')
     return (
@@ -31,22 +34,49 @@ function PayIcon({ id }) {
   )
 }
 
-export default function OrderDetailsScreen({ booking, counts, onPay }) {
+export default function OrderDetailsScreen({ booking, counts, onPay, onBack }) {
   const [method, setMethod] = useState('apple')
   const [voucher, setVoucher] = useState('')
+  const [voucherState, setVoucherState] = useState(null) // null | 'invalid' | number (rate)
 
-  const items = [
-    { label: `1x Ac refilling`, qty: counts.refill, price: counts.refill * AC_PRICE_PER_UNIT },
-    { label: `1x Ac Cleaning`, qty: counts.clean, price: counts.clean * AC_PRICE_PER_UNIT },
-  ].filter((it) => it.qty > 0)
+  const isInspection = booking.variant === 'inspection'
+
+  // What is being paid for depends on the flow:
+  //  - inspection booking -> only the provider's inspection visit fee
+  //  - direct booking     -> the selected AC services
+  const items = isInspection
+    ? [{ label: 'Inspection visit', qty: 1, price: booking.price }]
+    : [
+        { label: 'Ac refilling', qty: counts.refill, price: counts.refill * AC_PRICE_PER_UNIT },
+        { label: 'Ac Cleaning', qty: counts.clean, price: counts.clean * AC_PRICE_PER_UNIT },
+      ].filter((it) => it.qty > 0)
 
   const subtotal = items.reduce((sum, it) => sum + it.price, 0)
-  const discount = Math.round(subtotal * 0.05)
-  const total = subtotal - discount
+  const baseDiscount = isInspection ? 0 : Math.round(subtotal * 0.05)
+  const voucherRate = typeof voucherState === 'number' ? voucherState : 0
+  const voucherDiscount = Math.round(subtotal * voucherRate)
+  const total = subtotal - baseDiscount - voucherDiscount
+
+  function applyVoucher() {
+    const rate = VOUCHERS[voucher.trim().toUpperCase()]
+    setVoucherState(rate ?? 'invalid')
+  }
 
   return (
     <div className="font-poppins flex min-h-screen flex-col bg-[#F5F4F7] px-3 pt-5 pb-6">
-      <h1 className="text-center text-2xl font-semibold text-black">Order Details</h1>
+      <div className="relative">
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label="Go back"
+          className="absolute top-1 left-1 cursor-pointer p-2 text-black"
+        >
+          <svg width="10" height="18" viewBox="0 0 10 18" fill="none">
+            <path d="M9 1 2 9l7 8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+          </svg>
+        </button>
+        <h1 className="text-center text-2xl font-semibold text-black">Order Details</h1>
+      </div>
 
       {/* Provider / appointment card */}
       <div className="mt-5 rounded-xl bg-white p-3 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
@@ -62,8 +92,11 @@ export default function OrderDetailsScreen({ booking, counts, onPay }) {
             <p className="text-sm text-black">
               {booking.date.day} {booking.date.num}, {booking.time}
             </p>
+            <p className="text-xs text-[#8442FF]">
+              {isInspection ? 'Inspection visit' : 'AC cleaning & refilling'}
+            </p>
           </div>
-          <p className="text-black">{booking.price} AED</p>
+          <p className="text-black">{total} AED</p>
         </div>
         <div className="mt-1 pl-12 text-sm text-gray-400">
           <p>Ahmed Alshamsi</p>
@@ -77,24 +110,26 @@ export default function OrderDetailsScreen({ booking, counts, onPay }) {
         </div>
       </div>
 
-      {/* Progress: Inspection done -> Pay */}
-      <div className="mt-6 flex items-center px-2">
-        <div className="flex flex-col items-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#8442FF]">
-            <svg width="20" height="15" viewBox="0 0 24 18" fill="none">
-              <path d="m2 9 7 7L22 2" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+      {/* Progress (inspection flow only): inspection booked -> pay */}
+      {isInspection && (
+        <div className="mt-6 flex items-center px-2">
+          <div className="flex flex-col items-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#8442FF]">
+              <svg width="20" height="15" viewBox="0 0 24 18" fill="none">
+                <path d="m2 9 7 7L22 2" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <p className="mt-1 text-sm text-black">Inspection</p>
           </div>
-          <p className="mt-1 text-sm text-black">Inspection</p>
-        </div>
-        <div className="mx-1 mb-5 h-1 grow rounded bg-gradient-to-r from-[#8442FF] to-gray-300" />
-        <div className="flex flex-col items-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-gray-300 bg-white text-lg text-gray-400">
-            2
+          <div className="mx-1 mb-5 h-1 grow rounded bg-gradient-to-r from-[#8442FF] to-gray-300" />
+          <div className="flex flex-col items-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-gray-300 bg-white text-lg text-gray-400">
+              2
+            </div>
+            <p className="mt-1 text-sm text-black">Pay</p>
           </div>
-          <p className="mt-1 text-sm text-black">Pay</p>
         </div>
-      </div>
+      )}
 
       {/* Payment method */}
       <h2 className="mt-4 text-xl font-semibold text-black">Payment method</h2>
@@ -119,39 +154,64 @@ export default function OrderDetailsScreen({ booking, counts, onPay }) {
         <input
           type="text"
           value={voucher}
-          onChange={(e) => setVoucher(e.target.value)}
+          onChange={(e) => {
+            setVoucher(e.target.value)
+            setVoucherState(null)
+          }}
           placeholder="Voucher code"
           className="w-full bg-transparent px-3 text-sm text-black outline-none placeholder:text-gray-400"
         />
         <button
           type="button"
-          className="shrink-0 cursor-pointer rounded-xl border border-[#8442FF] bg-white px-7 py-2.5 text-lg text-[#8442FF]"
+          onClick={applyVoucher}
+          disabled={!voucher.trim()}
+          className="shrink-0 cursor-pointer rounded-xl border border-[#8442FF] bg-white px-7 py-2.5 text-lg text-[#8442FF] disabled:cursor-not-allowed disabled:opacity-40"
         >
           Apply
         </button>
       </div>
+      {voucherState === 'invalid' && (
+        <p className="mt-1 pl-2 text-xs text-red-500">Invalid voucher code</p>
+      )}
+      {voucherRate > 0 && (
+        <p className="mt-1 pl-2 text-xs text-green-600">
+          Voucher applied — {voucherRate * 100}% off
+        </p>
+      )}
 
       {/* Order summary */}
       <div className="mt-4 rounded-xl bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
         <h3 className="font-semibold text-black">Order Summary</h3>
         {items.map((it) => (
           <div key={it.label} className="mt-1 flex justify-between text-xs text-gray-400">
-            <span>{it.qty}x {it.label.slice(3)}</span>
+            <span>
+              {it.qty}x {it.label}
+            </span>
             <span>{it.price} AED</span>
           </div>
         ))}
         <div className="mt-1 flex justify-between text-sm">
           <span className="text-black">
-            Subtotal <span className="text-xs text-gray-400">({items.length} items)</span>
+            Subtotal <span className="text-xs text-gray-400">({items.length} {items.length === 1 ? 'item' : 'items'})</span>
           </span>
           <span className="text-black">{subtotal}.00 AED</span>
         </div>
-        <div className="flex items-baseline justify-between gap-2 text-sm">
-          <span className="text-black">
-            Saving &amp; Discounts <span className="text-xs text-[#8442FF]">(Discount applied 5%)</span>
-          </span>
-          <span className="shrink-0 whitespace-nowrap text-[#8442FF]">- {discount} AED</span>
-        </div>
+        {baseDiscount > 0 && (
+          <div className="flex items-baseline justify-between gap-2 text-sm">
+            <span className="text-black">
+              Saving &amp; Discounts <span className="text-xs text-[#8442FF]">(Discount applied 5%)</span>
+            </span>
+            <span className="shrink-0 whitespace-nowrap text-[#8442FF]">- {baseDiscount} AED</span>
+          </div>
+        )}
+        {voucherDiscount > 0 && (
+          <div className="flex items-baseline justify-between gap-2 text-sm">
+            <span className="text-black">
+              Voucher <span className="text-xs text-[#8442FF]">({voucher.trim().toUpperCase()})</span>
+            </span>
+            <span className="shrink-0 whitespace-nowrap text-[#8442FF]">- {voucherDiscount} AED</span>
+          </div>
+        )}
         <div className="mt-2 flex justify-between border-t border-gray-100 pt-2">
           <span className="text-xs text-gray-400">(VAT included)</span>
           <span className="text-lg font-semibold text-black">{total} AED</span>

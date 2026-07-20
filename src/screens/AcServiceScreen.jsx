@@ -1,6 +1,8 @@
 import GradientHeader from '../components/GradientHeader.jsx'
 import GradientButton from '../components/GradientButton.jsx'
 
+const MAX_UNITS = 10
+
 function Counter({ value, onChange }) {
   return (
     <div className="flex items-center gap-1.5">
@@ -18,7 +20,7 @@ function Counter({ value, onChange }) {
       <button
         type="button"
         aria-label="increase"
-        onClick={() => onChange(value + 1)}
+        onClick={() => onChange(Math.min(MAX_UNITS, value + 1))}
         className="h-6 w-6 cursor-pointer rounded bg-gray-100 text-gray-500"
       >
         +
@@ -28,6 +30,7 @@ function Counter({ value, onChange }) {
 }
 
 export default function AcServiceScreen({ counts, setCounts, onSearchProviders, onBookInspection, onBack }) {
+  const nothingSelected = counts.refill + counts.clean === 0
   return (
     <GradientHeader title="AC cleaning & Refilling" onBack={onBack}>
       <div className="flex grow flex-col px-4 pt-5 pb-6">
@@ -45,7 +48,14 @@ export default function AcServiceScreen({ counts, setCounts, onSearchProviders, 
 
         <div className="grow" />
 
-        <GradientButton onClick={onSearchProviders}>Search for providers</GradientButton>
+        {nothingSelected && (
+          <p className="mb-2 text-center text-xs text-gray-400">
+            Select at least one AC service to search for providers
+          </p>
+        )}
+        <GradientButton onClick={onSearchProviders} disabled={nothingSelected}>
+          Search for providers
+        </GradientButton>
 
         <button
           type="button"
