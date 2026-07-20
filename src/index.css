@@ -60,3 +60,32 @@ body {
 .fade-enter {
   animation: fade-in 0.3s ease-out;
 }
+
+/* Success screen: circle pops in, then the check mark draws itself */
+@keyframes pop {
+  0% {
+    transform: scale(0);
+  }
+  70% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.pop-enter {
+  animation: pop 0.4s ease-out;
+}
+
+@keyframes draw-check {
+  from {
+    stroke-dashoffset: 50;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.draw-check {
+  stroke-dasharray: 50;
+  animation: draw-check 0.45s ease-out 0.3s backwards;
+}

@@ -38,6 +38,7 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack }) {
   const [method, setMethod] = useState('apple')
   const [voucher, setVoucher] = useState('')
   const [voucherState, setVoucherState] = useState(null) // null | 'invalid' | number (rate)
+  const [paying, setPaying] = useState(false)
 
   const isInspection = booking.variant === 'inspection'
   const isMaintenance = booking.variant === 'maintenance'
@@ -223,7 +224,15 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack }) {
 
       <div className="grow" />
 
-      <GradientButton className="mt-6" onClick={() => onPay(total)}>
+      <GradientButton
+        className="mt-6"
+        loading={paying}
+        onClick={() => {
+          setPaying(true)
+          // Simulated payment processing; later this is the payment gateway call
+          setTimeout(() => onPay(total), 1200)
+        }}
+      >
         Pay
       </GradientButton>
     </div>

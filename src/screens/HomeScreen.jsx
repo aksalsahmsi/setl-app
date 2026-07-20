@@ -92,7 +92,7 @@ export default function HomeScreen({ onOpenService }) {
       </div>
 
       {/* Content sheet */}
-      <div className="-mt-10 grow rounded-t-[30px] bg-[#F2F1F4] px-4 pt-14 pb-8">
+      <div className="-mt-10 grow rounded-t-[30px] bg-[#F2F1F4] px-4 pt-14 pb-24">
         {/* Search */}
         <div className="flex h-14 items-center gap-3 rounded-2xl bg-white px-4 shadow-[0_4px_14px_rgba(0,0,0,0.08)]">
           <svg width="20" height="20" viewBox="0 0 22 22" fill="none" stroke="#9C9AA5" strokeWidth="2">
@@ -111,7 +111,7 @@ export default function HomeScreen({ onOpenService }) {
           <p className="max-w-[280px] text-[16px] leading-snug">
             Earn 10 dirhams for every friend who orders a favor with your code
           </p>
-          <p className="mt-3 text-sm">view All</p>
+          <p className="mt-3 text-sm">View all</p>
           <div className="mt-2 flex items-center justify-center gap-1.5">
             <span className="h-1.5 w-6 rounded-full bg-white" />
             <span className="h-1.5 w-1.5 rounded-full bg-white/50" />
@@ -146,7 +146,7 @@ export default function HomeScreen({ onOpenService }) {
 
         {/* Best car wash shops */}
         <section className="mt-5 rounded-2xl bg-white p-4">
-          <h2 className="text-xl font-semibold text-black">best car wash shops</h2>
+          <h2 className="text-xl font-semibold text-black">Best car wash shops</h2>
           <ScrollRow className="mt-3">
             <CarShopCard />
             <CarShopCard />

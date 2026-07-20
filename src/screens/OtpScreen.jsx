@@ -1,22 +1,40 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import GradientButton from '../components/GradientButton.jsx'
 
 const OTP_LENGTH = 5
+const RESEND_SECONDS = 30
 
 export default function OtpScreen({ onVerify }) {
   const [digits, setDigits] = useState(Array(OTP_LENGTH).fill(''))
   const [error, setError] = useState('')
+  const [verifying, setVerifying] = useState(false)
+  const [resendIn, setResendIn] = useState(RESEND_SECONDS)
   const inputsRef = useRef([])
 
-  function handleVerify() {
+  // Resend countdown
+  useEffect(() => {
+    if (resendIn <= 0) return
+    const t = setTimeout(() => setResendIn((s) => s - 1), 1000)
+    return () => clearTimeout(t)
+  }, [resendIn])
+
+  function verify() {
     const code = digits.join('')
     if (code.length < OTP_LENGTH) {
       setError(`Please enter the ${OTP_LENGTH}-digit code`)
       return
     }
     setError('')
-    onVerify(code)
+    setVerifying(true)
+    // Simulated verification delay; later this is the backend call
+    setTimeout(() => onVerify(code), 700)
   }
+
+  // Auto-submit as soon as the last digit is typed
+  useEffect(() => {
+    if (!verifying && digits.every((d) => d !== '')) verify()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [digits])
 
   function handleChange(i, value) {
     const digit = value.replace(/\D/g, '').slice(-1)
@@ -29,6 +47,13 @@ export default function OtpScreen({ onVerify }) {
 
   function handleKeyDown(i, e) {
     if (e.key === 'Backspace' && !digits[i] && i > 0) inputsRef.current[i - 1]?.focus()
+  }
+
+  function resend() {
+    setDigits(Array(OTP_LENGTH).fill(''))
+    setError('')
+    setResendIn(RESEND_SECONDS)
+    inputsRef.current[0]?.focus()
   }
 
   return (
@@ -57,6 +82,7 @@ export default function OtpScreen({ onVerify }) {
             inputMode="numeric"
             maxLength={1}
             value={digit}
+            disabled={verifying}
             onChange={(e) => handleChange(i, e.target.value)}
             onKeyDown={(e) => handleKeyDown(i, e)}
             aria-label={`OTP digit ${i + 1}`}
@@ -67,13 +93,18 @@ export default function OtpScreen({ onVerify }) {
 
       {error && <p className="mt-3 text-center text-xs text-red-500">{error}</p>}
 
-      <GradientButton className="mt-10" onClick={handleVerify}>
+      <GradientButton className="mt-10" loading={verifying} onClick={verify}>
         Verify
       </GradientButton>
 
       <p className="mt-4 text-right text-sm text-black">Didn&apos;t receive OTP?</p>
-      <button type="button" className="mt-2 cursor-pointer text-right text-sm text-[#2790C3]">
-        Resend OTP
+      <button
+        type="button"
+        onClick={resend}
+        disabled={resendIn > 0}
+        className="mt-1 cursor-pointer py-1 text-right text-sm text-[#2790C3] disabled:cursor-default disabled:text-gray-400"
+      >
+        {resendIn > 0 ? `Resend OTP (0:${String(resendIn).padStart(2, '0')})` : 'Resend OTP'}
       </button>
     </div>
   )

@@ -5,6 +5,7 @@ import UAEFlag from '../components/UAEFlag.jsx'
 export default function CustomerLogin({ onContinue }) {
   const [phone, setPhone] = useState('')
   const [error, setError] = useState('')
+  const [sending, setSending] = useState(false)
 
   function handleSubmit(e) {
     e.preventDefault()
@@ -14,7 +15,9 @@ export default function CustomerLogin({ onContinue }) {
       return
     }
     setError('')
-    onContinue(phone)
+    setSending(true)
+    // Simulated SMS send delay; later this is the backend call
+    setTimeout(() => onContinue(phone), 700)
   }
 
   return (
@@ -73,9 +76,17 @@ export default function CustomerLogin({ onContinue }) {
 
         <button
           type="submit"
-          className="font-inter mt-14 h-[52px] w-full cursor-pointer rounded-xl bg-linear-[270deg,#366EE9_-95.36%,#F15CFA_212.48%] text-[17px] font-medium text-white active:opacity-90"
+          disabled={sending}
+          className="font-inter mt-14 inline-flex h-[52px] w-full cursor-pointer items-center justify-center rounded-xl bg-linear-[270deg,#366EE9_-95.36%,#F15CFA_212.48%] text-[17px] font-medium text-white transition-transform duration-100 active:scale-[0.98] active:opacity-90"
         >
-          Continue
+          {sending ? (
+            <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="white" strokeOpacity="0.3" strokeWidth="3" />
+              <path d="M12 2a10 10 0 0 1 10 10" stroke="white" strokeWidth="3" strokeLinecap="round" />
+            </svg>
+          ) : (
+            'Continue'
+          )}
         </button>
       </form>
     </div>
