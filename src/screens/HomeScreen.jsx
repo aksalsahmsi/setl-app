@@ -1,7 +1,13 @@
+import acImg from '../assets/ac.png'
+import sinkImg from '../assets/sink.png'
+import washerImg from '../assets/washer.png'
+import electricImg from '../assets/electric.png'
+
 const HOME_SERVICES = [
-  { name: 'Pest control', gradient: 'linear-gradient(135deg,#3E7C4F,#1E3D27)' },
-  { name: 'AC cleaning & refilling', gradient: 'linear-gradient(135deg,#8AA8C8,#4A6785)', target: 'acService' },
-  { name: 'Plumbing', gradient: 'linear-gradient(135deg,#7FB6C4,#3E6B78)' },
+  { name: 'AC cleaning & refilling', img: acImg, target: 'acService' },
+  { name: 'Plumbing', img: sinkImg },
+  { name: 'Washing machines', img: washerImg },
+  { name: 'Electrical', img: electricImg },
 ]
 
 const CAR_SERVICES = [
@@ -14,9 +20,12 @@ function ServiceCard({ service, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`relative h-40 w-52 shrink-0 overflow-hidden rounded-lg text-left ${onClick ? 'cursor-pointer' : 'cursor-default'}`}
-      style={{ background: service.gradient }}
+      className={`relative h-40 w-52 shrink-0 overflow-hidden rounded-lg bg-[#EEF0F4] text-left ${onClick ? 'cursor-pointer' : 'cursor-default'}`}
+      style={service.gradient ? { background: service.gradient } : undefined}
     >
+      {service.img && (
+        <img src={service.img} alt="" className="h-full w-full object-contain p-4 pb-10" />
+      )}
       <span className="absolute inset-x-0 bottom-0 bg-black/40 px-3 py-2 text-[15px] text-white">
         {service.name}
       </span>
@@ -82,7 +91,7 @@ export default function HomeScreen({ onOpenService }) {
       </div>
 
       {/* Content sheet */}
-      <div className="-mt-10 grow rounded-t-[30px] bg-[#F2F1F4] px-4 pt-5 pb-8">
+      <div className="-mt-10 grow rounded-t-[30px] bg-[#F2F1F4] px-4 pt-14 pb-8">
         {/* Search */}
         <div className="flex h-14 items-center gap-3 rounded-2xl bg-white px-4 shadow-[0_4px_14px_rgba(0,0,0,0.08)]">
           <svg width="20" height="20" viewBox="0 0 22 22" fill="none" stroke="#9C9AA5" strokeWidth="2">
@@ -113,7 +122,7 @@ export default function HomeScreen({ onOpenService }) {
         {/* Home services */}
         <section className="mt-5 rounded-2xl bg-white p-4">
           <h2 className="text-xl font-semibold text-black">Home services</h2>
-          <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
+          <div className="no-scrollbar mt-3 flex gap-3 overflow-x-auto pb-1">
             {HOME_SERVICES.map((s) => (
               <ServiceCard
                 key={s.name}
@@ -127,7 +136,7 @@ export default function HomeScreen({ onOpenService }) {
         {/* Car services */}
         <section className="mt-5 rounded-2xl bg-white p-4">
           <h2 className="text-xl font-semibold text-black">Car services</h2>
-          <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
+          <div className="no-scrollbar mt-3 flex gap-3 overflow-x-auto pb-1">
             {CAR_SERVICES.map((s) => (
               <ServiceCard key={s.name} service={s} />
             ))}

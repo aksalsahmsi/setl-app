@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import GradientButton from './GradientButton.jsx'
 import { DATES, TIMES } from '../data/providers.js'
 
 // Bottom sheet for picking a date + time (used for inspections and bookings).
@@ -26,7 +25,7 @@ export default function DateTimeSheet({ provider, title, onConfirm, onClose }) {
         </div>
 
         <p className="mt-4 text-sm font-semibold tracking-wide text-[#8442FF]">DATE</p>
-        <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+        <div className="no-scrollbar mt-2 flex gap-2 overflow-x-auto pb-1">
           {DATES.map((d) => (
             <button
               key={d.day}
@@ -43,7 +42,7 @@ export default function DateTimeSheet({ provider, title, onConfirm, onClose }) {
         </div>
 
         <p className="mt-4 text-sm font-semibold tracking-wide text-[#8442FF]">TIME</p>
-        <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+        <div className="no-scrollbar mt-2 flex gap-2 overflow-x-auto pb-1">
           {TIMES.map((t) => (
             <button
               key={t}
@@ -58,12 +57,15 @@ export default function DateTimeSheet({ provider, title, onConfirm, onClose }) {
           ))}
         </div>
 
-        <GradientButton
-          className="mx-auto mt-6 !h-11 !w-44 rounded-lg text-base"
-          onClick={() => onConfirm({ date, time })}
-        >
-          Confirm
-        </GradientButton>
+        <div className="mt-6 flex justify-center">
+          <button
+            type="button"
+            onClick={() => onConfirm({ date, time })}
+            className="h-11 w-44 cursor-pointer rounded-lg bg-linear-[270deg,#366EE9_-95.36%,#F15CFA_212.48%] text-base font-medium text-white active:opacity-90"
+          >
+            Confirm
+          </button>
+        </div>
       </div>
     </div>
   )

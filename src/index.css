@@ -17,3 +17,11 @@ body {
   margin: 0;
   background: #e9e9ec;
 }
+
+/* Horizontal card rows scroll without showing a scrollbar (like a native app) */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

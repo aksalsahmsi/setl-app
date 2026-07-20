@@ -18,7 +18,7 @@ export default function GradientHeader({ title, onBack, children, sheetClassName
         )}
         <h1 className="text-center text-lg font-semibold text-white">{title}</h1>
       </div>
-      <div className={`-mt-6 flex grow flex-col rounded-t-[30px] ${sheetClassName}`}>
+      <div className={`-mt-6 flex grow flex-col rounded-t-[30px] pt-6 ${sheetClassName}`}>
         {children}
       </div>
     </div>

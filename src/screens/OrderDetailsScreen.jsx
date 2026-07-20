@@ -146,11 +146,11 @@ export default function OrderDetailsScreen({ booking, counts, onPay }) {
           </span>
           <span className="text-black">{subtotal}.00 AED</span>
         </div>
-        <div className="flex justify-between text-sm">
+        <div className="flex items-baseline justify-between gap-2 text-sm">
           <span className="text-black">
             Saving &amp; Discounts <span className="text-xs text-[#8442FF]">(Discount applied 5%)</span>
           </span>
-          <span className="text-[#8442FF]">- {discount}AED</span>
+          <span className="shrink-0 whitespace-nowrap text-[#8442FF]">- {discount} AED</span>
         </div>
         <div className="mt-2 flex justify-between border-t border-gray-100 pt-2">
           <span className="text-xs text-gray-400">(VAT included)</span>
