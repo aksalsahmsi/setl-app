@@ -9,9 +9,9 @@ export default function DateTimeSheet({ provider, title, onConfirm, onClose }) {
   return (
     <div className="absolute inset-0 z-20 flex flex-col justify-end">
       {/* dimmed backdrop */}
-      <div className="absolute inset-0 bg-black/30" onClick={onClose} />
+      <div className="fade-enter absolute inset-0 bg-black/30" onClick={onClose} />
 
-      <div className="relative rounded-t-[24px] bg-[#F5F4F7] px-4 pt-3 pb-8">
+      <div className="sheet-enter relative rounded-t-[24px] bg-[#F5F4F7] px-4 pt-3 pb-8">
         <div className="mx-auto mb-3 h-1 w-16 rounded-full bg-gray-300" />
 
         <div className="flex items-center gap-3">

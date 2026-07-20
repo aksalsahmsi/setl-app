@@ -1,3 +1,4 @@
+import ScrollRow from '../components/ScrollRow.jsx'
 import acImg from '../assets/ac.png'
 import sinkImg from '../assets/sink.png'
 import washerImg from '../assets/washer.png'
@@ -47,14 +48,14 @@ function Stars({ value = 3 }) {
 
 function CarShopCard() {
   return (
-    <div className="grow rounded-xl bg-white p-3 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-      <p className="font-medium text-black">Take care of your car</p>
-      <div className="mt-1 flex items-center gap-1 text-xs text-gray-500">
+    <div className="w-56 shrink-0 rounded-xl bg-white p-3 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+      <p className="font-medium whitespace-nowrap text-black">Take care of your car</p>
+      <div className="mt-1 flex items-center gap-1 text-xs whitespace-nowrap text-gray-500">
         <Stars value={3} />
         <span className="font-semibold text-black">3.0</span>
         <span>(80 Reviews)</span>
       </div>
-      <p className="mt-2 w-fit rounded bg-[#E5D9FB] px-2 py-1 text-xs text-[#8442FF]">
+      <p className="mt-2 w-fit rounded bg-[#E5D9FB] px-2 py-1 text-xs whitespace-nowrap text-[#8442FF]">
         Available Today at 10.00 Am
       </p>
     </div>
@@ -122,7 +123,7 @@ export default function HomeScreen({ onOpenService }) {
         {/* Home services */}
         <section className="mt-5 rounded-2xl bg-white p-4">
           <h2 className="text-xl font-semibold text-black">Home services</h2>
-          <div className="no-scrollbar mt-3 flex gap-3 overflow-x-auto pb-1">
+          <ScrollRow className="mt-3">
             {HOME_SERVICES.map((s) => (
               <ServiceCard
                 key={s.name}
@@ -130,26 +131,27 @@ export default function HomeScreen({ onOpenService }) {
                 onClick={s.target ? () => onOpenService(s.target) : undefined}
               />
             ))}
-          </div>
+          </ScrollRow>
         </section>
 
         {/* Car services */}
         <section className="mt-5 rounded-2xl bg-white p-4">
           <h2 className="text-xl font-semibold text-black">Car services</h2>
-          <div className="no-scrollbar mt-3 flex gap-3 overflow-x-auto pb-1">
+          <ScrollRow className="mt-3">
             {CAR_SERVICES.map((s) => (
               <ServiceCard key={s.name} service={s} />
             ))}
-          </div>
+          </ScrollRow>
         </section>
 
         {/* Best car wash shops */}
         <section className="mt-5 rounded-2xl bg-white p-4">
           <h2 className="text-xl font-semibold text-black">best car wash shops</h2>
-          <div className="mt-3 flex gap-3">
+          <ScrollRow className="mt-3">
             <CarShopCard />
             <CarShopCard />
-          </div>
+            <CarShopCard />
+          </ScrollRow>
         </section>
       </div>
     </div>

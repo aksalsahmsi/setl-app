@@ -29,20 +29,22 @@ function StepIcon({ icon }) {
 }
 
 // "book inspection — approve maintenance — Pay" progress row.
+// A continuous track line runs behind the three circles, like the design.
 export default function Stepper() {
   return (
-    <div className="flex items-start justify-between px-5 pt-5">
-      {STEPS.map((step, i) => (
-        <div key={step.key} className="relative flex flex-1 flex-col items-center">
-          {i > 0 && (
-            <div className="absolute top-[22px] right-1/2 -z-10 h-[3px] w-full translate-x-[-28px] bg-gray-300" />
-          )}
-          <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#8442FF]/40 bg-white">
-            <StepIcon icon={step.icon} />
+    <div className="relative px-6 pt-5">
+      {/* track line between the first and last circle centers */}
+      <div className="absolute top-[42px] right-16 left-16 h-[3px] rounded bg-gray-200" />
+      <div className="relative flex justify-between">
+        {STEPS.map((step) => (
+          <div key={step.key} className="flex w-24 flex-col items-center">
+            <div className="z-10 flex h-11 w-11 items-center justify-center rounded-full border border-[#8442FF]/40 bg-white">
+              <StepIcon icon={step.icon} />
+            </div>
+            <p className="mt-1 text-center text-xs whitespace-pre-line text-black">{step.label}</p>
           </div>
-          <p className="mt-1 text-center text-xs whitespace-pre-line text-black">{step.label}</p>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   )
 }

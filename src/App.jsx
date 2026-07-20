@@ -68,7 +68,9 @@ function App() {
 
   return (
     <div className="relative mx-auto min-h-screen w-full max-w-[375px] overflow-hidden bg-white shadow-xl">
-      {screens[screen]}
+      <div key={screen} className="screen-enter">
+        {screens[screen]}
+      </div>
     </div>
   )
 }

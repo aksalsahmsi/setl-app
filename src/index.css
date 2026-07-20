@@ -25,3 +25,38 @@ body {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Screen-change transition: new screen fades in and slides slightly from the right */
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.screen-enter {
+  animation: screen-in 0.25s ease-out;
+}
+
+/* Bottom sheet slides up from the bottom edge */
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+.sheet-enter {
+  animation: sheet-up 0.3s ease-out;
+}
+
+/* Backdrop fades in behind the bottom sheet */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+.fade-enter {
+  animation: fade-in 0.3s ease-out;
+}
