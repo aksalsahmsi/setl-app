@@ -2,13 +2,12 @@ import { useState } from 'react'
 import SetlLogo from '../components/SetlLogo.jsx'
 import UAEFlag from '../components/UAEFlag.jsx'
 
-export default function CustomerLogin() {
+export default function CustomerLogin({ onContinue }) {
   const [phone, setPhone] = useState('')
 
   function handleSubmit(e) {
     e.preventDefault()
-    // TODO: send the number to the backend / go to the OTP screen
-    alert(`Continue with +971 ${phone}`)
+    onContinue(phone)
   }
 
   return (
