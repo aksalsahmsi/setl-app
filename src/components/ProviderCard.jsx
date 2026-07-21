@@ -1,5 +1,5 @@
 // White provider card: logo avatar, name, price in AED, yellow rating badge, Book button.
-export default function ProviderCard({ provider, price, buttonLabel = 'Book', onBook }) {
+export default function ProviderCard({ provider, price, priceSuffix = ' AED', buttonLabel = 'Book', onBook }) {
   const initials = provider.name
     .split(' ')
     .slice(0, 2)
@@ -17,7 +17,10 @@ export default function ProviderCard({ provider, price, buttonLabel = 'Book', on
       </div>
       <div className="min-w-0 grow">
         <p className="truncate font-semibold text-black">{provider.name}</p>
-        <p className="mt-0.5 text-sm text-black">{price} AED</p>
+        <p className="mt-0.5 text-sm text-black">
+          {price}
+          {priceSuffix}
+        </p>
         <button
           type="button"
           onClick={onBook}

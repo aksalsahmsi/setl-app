@@ -4,6 +4,7 @@ const STATUS_STYLES = {
   'In progress': 'bg-[#EDE4FD] text-[#8442FF]',
   Scheduled: 'bg-blue-50 text-blue-600',
   Completed: 'bg-green-50 text-green-600',
+  Rejected: 'bg-red-50 text-red-500',
 }
 
 export default function OrdersScreen({ orders, onOpenOrder, onBook }) {

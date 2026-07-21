@@ -45,18 +45,21 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack }) {
 
   // What is being paid for depends on the flow:
   //  - inspection booking -> only the provider's inspection visit fee
-  //  - maintenance        -> the services the inspector found (price update)
+  //  - maintenance        -> the products the inspector proposed (accepted by the customer)
   //  - direct booking     -> the selected AC services
-  const serviceCounts = isMaintenance ? booking.found : counts
   const items = isInspection
     ? [{ label: 'Inspection visit', qty: 1, price: booking.price }]
-    : [
-        { label: 'Ac refilling', qty: serviceCounts.refill, price: serviceCounts.refill * AC_PRICE_PER_UNIT },
-        { label: 'Ac Cleaning', qty: serviceCounts.clean, price: serviceCounts.clean * AC_PRICE_PER_UNIT },
-      ].filter((it) => it.qty > 0)
+    : isMaintenance
+      ? booking.products.map((p) => ({ label: p.name, qty: p.qty, price: p.price }))
+      : [
+          { label: 'Ac refilling', qty: counts.refill, price: counts.refill * AC_PRICE_PER_UNIT },
+          { label: 'Ac Cleaning', qty: counts.clean, price: counts.clean * AC_PRICE_PER_UNIT },
+        ].filter((it) => it.qty > 0)
 
   const subtotal = items.reduce((sum, it) => sum + it.price, 0)
-  const baseDiscount = isInspection ? 0 : Math.round(subtotal * 0.05)
+  // 10% off accepted maintenance (mockup 11a), 5% off direct bookings (mockup 13)
+  const baseRate = isMaintenance ? 0.1 : isInspection ? 0 : 0.05
+  const baseDiscount = Math.round(subtotal * baseRate)
   const voucherRate = typeof voucherState === 'number' ? voucherState : 0
   const voucherDiscount = Math.round(subtotal * voucherRate)
   const total = subtotal - baseDiscount - voucherDiscount
@@ -79,8 +82,52 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack }) {
             <path d="M9 1 2 9l7 8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
           </svg>
         </button>
-        <h1 className="text-center text-2xl font-semibold text-black">Order Details</h1>
+        <h1 className="text-center text-2xl font-semibold text-black">
+          {isInspection ? 'Check out' : 'Order Details'}
+        </h1>
       </div>
+
+      {/* Inspection checkout (mockup 7): timing + location sections */}
+      {isInspection && (
+        <>
+          <p className="mt-3 flex items-center gap-3 rounded-xl bg-white p-3 text-xs text-gray-500 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-500 text-lg font-bold text-white">
+              !
+            </span>
+            Please note: a prior inspection of your issue is necessary before proceeding, ensuring a
+            seamless and efficient experience with our services.
+          </p>
+          <h2 className="mt-4 text-lg font-semibold text-black">Timing</h2>
+          <div className="mt-1 flex items-center justify-between rounded-xl bg-white p-3 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+            <div>
+              <p className="text-[15px] text-black">
+                {booking.date.day} {booking.date.num}
+              </p>
+              <p className="text-sm text-gray-400">{booking.time}</p>
+            </div>
+            <button type="button" onClick={onBack} className="cursor-pointer text-[15px] text-[#8442FF]">
+              Change
+            </button>
+          </div>
+          <h2 className="mt-4 text-lg font-semibold text-black">Location</h2>
+          <div className="mt-1 rounded-xl bg-white p-3 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+            <p className="text-[15px] text-black">9 Yaw Hayah St-Ni&quot;mah-Abu Dhabi</p>
+            <div className="mt-2 flex gap-2">
+              {['Indoor', 'outdoor', 'Villa'].map((t, i) => (
+                <span
+                  key={t}
+                  className={`rounded-lg border px-4 py-1.5 text-sm ${
+                    i === 0 ? 'border-[#8442FF] text-[#8442FF]' : 'border-gray-200 text-gray-400'
+                  }`}
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          </div>
+          <h2 className="mt-4 text-lg font-semibold text-black">Service</h2>
+        </>
+      )}
 
       {/* Provider / appointment card */}
       <div className="mt-5 rounded-xl bg-white p-3 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
@@ -97,7 +144,11 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack }) {
               {booking.date.day} {booking.date.num}, {booking.time}
             </p>
             <p className="text-xs text-[#8442FF]">
-              {isInspection ? 'Inspection visit' : 'AC cleaning & refilling'}
+              {isInspection
+                ? `${booking.service === 'plumber' ? 'Plumber' : 'AC'} inspection`
+                : booking.service === 'plumber'
+                  ? 'Plumbing maintenance'
+                  : 'AC cleaning & refilling'}
             </p>
           </div>
           <p className="text-black">{total} AED</p>
@@ -114,8 +165,14 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack }) {
         </div>
       </div>
 
-      {/* Progress (inspection/maintenance flows): inspection -> pay */}
-      {(isInspection || isMaintenance) && (
+      {isInspection && (
+        <p className="mt-1 px-2 text-[11px] text-gray-400">
+          After inspection approve or cancel maintenance. Inspection fees are non refundable.
+        </p>
+      )}
+
+      {/* Progress (maintenance flow): inspection done -> pay */}
+      {isMaintenance && (
         <div className="mt-6 flex items-center px-2">
           <div className="flex flex-col items-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#8442FF]">
@@ -203,7 +260,8 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack }) {
         {baseDiscount > 0 && (
           <div className="flex items-baseline justify-between gap-2 text-sm">
             <span className="text-black">
-              Saving &amp; Discounts <span className="text-xs text-[#8442FF]">(Discount applied 5%)</span>
+              Saving &amp; Discounts{' '}
+              <span className="text-xs text-[#8442FF]">(Discount applied {baseRate * 100}%)</span>
             </span>
             <span className="shrink-0 whitespace-nowrap text-[#8442FF]">- {baseDiscount} AED</span>
           </div>
@@ -233,7 +291,7 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack }) {
           setTimeout(() => onPay(total), 1200)
         }}
       >
-        Pay
+        {isInspection ? 'Confirm' : 'Pay'}
       </GradientButton>
     </div>
   )

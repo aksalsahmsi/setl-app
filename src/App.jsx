@@ -1,40 +1,53 @@
 import { useState } from 'react'
 import CustomerLogin from './screens/CustomerLogin.jsx'
 import OtpScreen from './screens/OtpScreen.jsx'
+import LocationScreen from './screens/LocationScreen.jsx'
 import HomeScreen from './screens/HomeScreen.jsx'
 import AcServiceScreen from './screens/AcServiceScreen.jsx'
 import ProvidersScreen from './screens/ProvidersScreen.jsx'
 import OrderDetailsScreen from './screens/OrderDetailsScreen.jsx'
 import OrderTrackingScreen from './screens/OrderTrackingScreen.jsx'
+import RejectReasonScreen from './screens/RejectReasonScreen.jsx'
 import SuccessScreen from './screens/SuccessScreen.jsx'
 import OrdersScreen from './screens/OrdersScreen.jsx'
 import ProfileScreen from './screens/ProfileScreen.jsx'
+import ChooseServiceScreen from './screens/provider/ChooseServiceScreen.jsx'
+import CoverageScreen from './screens/provider/CoverageScreen.jsx'
+import TimeSlotsScreen from './screens/provider/TimeSlotsScreen.jsx'
+import ProviderDoneScreen from './screens/provider/ProviderDoneScreen.jsx'
 import TabBar from './components/TabBar.jsx'
 
 const TAB_SCREENS = ['home', 'orders', 'profile']
 
-// AC customer flow:
-// login -> otp -> home -> acService -> providers/inspection -> orderDetails -> success
-// After an inspection: success -> tracking (price update arrives) -> orderDetails -> success
+// Customer flow:
+//   login -> otp -> location -> home -> service -> providers -> checkout -> success
+//   Inspection: success -> tracking (products arrive) -> accept (checkout) / reject (reason)
+// Provider flow (onboarding):
+//   login -> otp -> chooseService -> coverage -> timeSlots -> done
 function App() {
+  const [mode, setMode] = useState('customer') // 'customer' | 'provider'
   const [screen, setScreen] = useState('login')
   const [phone, setPhone] = useState('')
   const [counts, setCounts] = useState({ refill: 1, clean: 1 })
-  const [booking, setBooking] = useState(null) // { provider, date, time, variant, price, ... }
+  const [booking, setBooking] = useState(null) // { provider, date, time, variant, service, ... }
   const [orders, setOrders] = useState([])
+  const [providerProfile, setProviderProfile] = useState({ services: [], range: 15, slots: null })
 
-  function confirmBooking(variant) {
+  function confirmBooking(service, variant) {
     return (provider, date, time) => {
       setBooking({
         provider,
         date,
         time,
         variant,
+        service,
         price: variant === 'inspection' ? provider.inspectionFee : provider.bookingFee,
       })
       setScreen('orderDetails')
     }
   }
+
+  const serviceName = (s) => (s === 'plumber' ? 'Plumber' : 'AC cleaning & refilling')
 
   function handlePaid(total) {
     if (booking.variant === 'inspection') {
@@ -46,7 +59,7 @@ function App() {
           provider: booking.provider,
           date: booking.date,
           time: booking.time,
-          service: 'AC inspection',
+          service: `${booking.service === 'plumber' ? 'Plumber' : 'AC'} inspection`,
           status: 'In progress',
           total,
         },
@@ -56,7 +69,7 @@ function App() {
       setOrders((o) =>
         o.map((ord) =>
           ord.id === booking.orderId
-            ? { ...ord, status: 'Completed', service: 'AC cleaning & refilling', total: ord.total + total }
+            ? { ...ord, status: 'Completed', service: serviceName(booking.service), total: ord.total + total }
             : ord,
         ),
       )
@@ -69,7 +82,7 @@ function App() {
           provider: booking.provider,
           date: booking.date,
           time: booking.time,
-          service: 'AC cleaning & refilling',
+          service: serviceName(booking.service),
           status: 'Scheduled',
           total,
         },
@@ -79,25 +92,40 @@ function App() {
     setScreen('success')
   }
 
+  function handleRejected(reason) {
+    setOrders((o) =>
+      o.map((ord) =>
+        ord.id === booking.orderId ? { ...ord, status: 'Rejected', reason } : ord,
+      ),
+    )
+    setBooking(null)
+    setScreen('orders')
+  }
+
   function logout() {
+    setMode('customer')
     setScreen('login')
     setPhone('')
     setCounts({ refill: 1, clean: 1 })
     setBooking(null)
     setOrders([])
+    setProviderProfile({ services: [], range: 15, slots: null })
   }
 
   const screens = {
     login: (
       <CustomerLogin
+        asProvider={mode === 'provider'}
+        onSwitchMode={() => setMode(mode === 'provider' ? 'customer' : 'provider')}
         onContinue={(p) => {
           setPhone(p)
           setScreen('otp')
         }}
       />
     ),
-    otp: <OtpScreen onVerify={() => setScreen('home')} />,
-    home: <HomeScreen onOpenService={() => setScreen('acService')} />,
+    otp: <OtpScreen onVerify={() => setScreen(mode === 'provider' ? 'chooseService' : 'location')} />,
+    location: <LocationScreen onConfirm={() => setScreen('home')} />,
+    home: <HomeScreen onOpenService={(target) => setScreen(target)} />,
     orders: (
       <OrdersScreen
         orders={orders}
@@ -117,16 +145,26 @@ function App() {
     ),
     providers: (
       <ProvidersScreen
+        service="ac"
         variant="booking"
-        onConfirm={confirmBooking('booking')}
+        onConfirm={confirmBooking('ac', 'booking')}
         onBack={() => setScreen('acService')}
       />
     ),
     inspection: (
       <ProvidersScreen
+        service="ac"
         variant="inspection"
-        onConfirm={confirmBooking('inspection')}
+        onConfirm={confirmBooking('ac', 'inspection')}
         onBack={() => setScreen('acService')}
+      />
+    ),
+    plumberProviders: (
+      <ProvidersScreen
+        service="plumber"
+        variant="inspection"
+        onConfirm={confirmBooking('plumber', 'inspection')}
+        onBack={() => setScreen('home')}
       />
     ),
     orderDetails: (
@@ -137,9 +175,11 @@ function App() {
           setScreen(
             booking?.variant === 'maintenance'
               ? 'tracking'
-              : booking?.variant === 'inspection'
-                ? 'inspection'
-                : 'providers',
+              : booking?.service === 'plumber'
+                ? 'plumberProviders'
+                : booking?.variant === 'inspection'
+                  ? 'inspection'
+                  : 'providers',
           )
         }
         onPay={handlePaid}
@@ -150,18 +190,55 @@ function App() {
         booking={booking}
         counts={counts}
         onBack={() => setScreen('orders')}
-        onProceedToPay={(found) => {
-          setBooking({ ...booking, variant: 'maintenance', found })
+        onProceedToPay={(products) => {
+          setBooking({ ...booking, variant: 'maintenance', products })
           setScreen('orderDetails')
         }}
+        onReject={() => setScreen('rejectReason')}
       />
     ),
+    rejectReason: <RejectReasonScreen onSubmit={handleRejected} onBack={() => setScreen('tracking')} />,
     success: (
       <SuccessScreen
         total={booking?.total}
         variant={booking?.variant}
         onDone={() => setScreen('home')}
         onTrack={() => setScreen('tracking')}
+      />
+    ),
+    // Provider onboarding
+    chooseService: (
+      <ChooseServiceScreen
+        onConfirm={(services) => {
+          setProviderProfile({ ...providerProfile, services })
+          setScreen('coverage')
+        }}
+        onBack={() => setScreen('otp')}
+      />
+    ),
+    coverage: (
+      <CoverageScreen
+        onConfirm={(range) => {
+          setProviderProfile((p) => ({ ...p, range }))
+          setScreen('timeSlots')
+        }}
+        onBack={() => setScreen('chooseService')}
+      />
+    ),
+    timeSlots: (
+      <TimeSlotsScreen
+        onConfirm={(slots) => {
+          setProviderProfile((p) => ({ ...p, slots }))
+          setScreen('providerDone')
+        }}
+        onBack={() => setScreen('coverage')}
+      />
+    ),
+    providerDone: (
+      <ProviderDoneScreen
+        services={providerProfile.services}
+        range={providerProfile.range}
+        onDone={logout}
       />
     ),
   }
@@ -173,7 +250,7 @@ function App() {
       <div key={screen} className="screen-enter">
         {screens[screen]}
       </div>
-      {TAB_SCREENS.includes(screen) && (
+      {mode === 'customer' && TAB_SCREENS.includes(screen) && (
         <TabBar active={screen} onChange={setScreen} ordersBadge={activeOrders} />
       )}
     </div>

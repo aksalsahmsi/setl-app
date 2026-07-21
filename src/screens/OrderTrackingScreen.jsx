@@ -1,30 +1,26 @@
 import { useEffect, useState } from 'react'
 import GradientButton from '../components/GradientButton.jsx'
-import { AC_PRICE_PER_UNIT } from '../data/providers.js'
+import ProductCard from '../components/ProductCard.jsx'
+import { getInspectionProducts } from '../data/providers.js'
 
-// Tracking screen after an inspection is booked (mockup 8).
-// While the inspection is in progress the price area shows gray skeleton
-// boxes; when the inspector finishes, the price update appears on screen
-// and the customer can pay.
-export default function OrderTrackingScreen({ booking, counts, onProceedToPay, onBack }) {
-  const [update, setUpdate] = useState(null) // what the inspector found
+// Tracking screen after an inspection is booked (mockup 8/9a).
+// While the inspection is in progress the products area shows gray skeleton
+// boxes; when the inspector finishes, the proposed products appear with
+// their prices and the fair market range. The customer accepts (Next) or
+// rejects with a reason.
+export default function OrderTrackingScreen({ booking, counts, onProceedToPay, onReject, onBack }) {
+  const [products, setProducts] = useState(null)
 
-  // Simulated for now: the price update "arrives" a few seconds after the
-  // visit. Later this comes from the backend instead.
+  // Simulated for now: the inspector's product list "arrives" a few seconds
+  // after the visit. Later this comes from the backend instead.
   useEffect(() => {
     const t = setTimeout(() => {
-      setUpdate({ refill: counts.refill || 1, clean: counts.clean || 1 })
+      setProducts(getInspectionProducts(booking.service, counts))
     }, 4000)
     return () => clearTimeout(t)
-  }, [counts])
+  }, [booking.service, counts])
 
-  const items = update
-    ? [
-        { label: 'Ac refilling', qty: update.refill, price: update.refill * AC_PRICE_PER_UNIT },
-        { label: 'Ac Cleaning', qty: update.clean, price: update.clean * AC_PRICE_PER_UNIT },
-      ].filter((it) => it.qty > 0)
-    : []
-  const total = items.reduce((sum, it) => sum + it.price, 0)
+  const total = (products ?? []).reduce((sum, p) => sum + p.price, 0)
 
   return (
     <div className="font-poppins flex min-h-screen flex-col bg-[#F5F4F7] px-3 pt-5 pb-6">
@@ -67,7 +63,7 @@ export default function OrderTrackingScreen({ booking, counts, onProceedToPay, o
         </div>
       </div>
 
-      {/* Progress: inspection done -> pay */}
+      {/* Progress: inspection done -> products */}
       <div className="mt-6 flex items-center px-2">
         <div className="flex flex-col items-center">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#8442FF]">
@@ -79,17 +75,21 @@ export default function OrderTrackingScreen({ booking, counts, onProceedToPay, o
         </div>
         <div className="mx-1 mb-5 h-1 grow rounded bg-gradient-to-r from-[#8442FF] to-gray-300" />
         <div className="flex flex-col items-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-gray-300 bg-white text-lg text-gray-400">
+          <div
+            className={`flex h-12 w-12 items-center justify-center rounded-full text-lg ${
+              products ? 'bg-[#B15CF3] text-white' : 'border-2 border-gray-300 bg-white text-gray-400'
+            }`}
+          >
             2
           </div>
-          <p className="mt-1 text-sm text-black">Pay</p>
+          <p className="mt-1 text-sm text-black">Products</p>
         </div>
       </div>
 
-      {!update ? (
+      {!products ? (
         <>
           <p className="mt-5 text-center text-sm text-gray-400">
-            Inspection in progress — the price will show here once it&apos;s ready
+            Inspection in progress — the products &amp; prices will show here once it&apos;s done
           </p>
           {/* Skeleton placeholders, like the design */}
           {[1, 2, 3].map((i) => (
@@ -108,39 +108,27 @@ export default function OrderTrackingScreen({ booking, counts, onProceedToPay, o
         </>
       ) : (
         <>
-          {/* The price update from the inspector */}
-          <div className="screen-enter mt-5 rounded-2xl bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
-            <div className="flex items-center gap-2">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100">
-                <svg width="12" height="9" viewBox="0 0 24 18" fill="none">
-                  <path d="m2 9 7 7L22 2" stroke="#16A34A" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </span>
-              <p className="font-semibold text-black">Inspection completed</p>
-            </div>
-            <p className="mt-1 text-xs text-gray-400">
-              Price update from {booking.provider.name}:
-            </p>
-            <div className="mt-3 border-t border-gray-100 pt-2">
-              {items.map((it) => (
-                <div key={it.label} className="flex justify-between py-1 text-sm">
-                  <span className="text-black">
-                    {it.qty}x {it.label}
-                  </span>
-                  <span className="text-black">{it.price} AED</span>
-                </div>
-              ))}
-              <div className="mt-1 flex justify-between border-t border-gray-100 pt-2">
-                <span className="font-semibold text-black">Total</span>
-                <span className="font-semibold text-black">{total} AED</span>
-              </div>
-            </div>
+          <h2 className="mt-5 mb-2 text-lg font-semibold text-black">Products</h2>
+          <div className="screen-enter flex flex-col gap-3">
+            {products.map((p) => (
+              <ProductCard key={p.name} product={p} />
+            ))}
           </div>
 
           <div className="grow" />
-          <GradientButton className="mt-6" onClick={() => onProceedToPay(update)}>
-            Pay {total} AED
+          <GradientButton className="mt-6" onClick={() => onProceedToPay(products)}>
+            Next
           </GradientButton>
+          <button
+            type="button"
+            onClick={() => onReject(products)}
+            className="mt-3 h-12 w-full cursor-pointer rounded-xl border border-[#8442FF] bg-white text-[16px] font-medium text-[#8442FF] transition-transform duration-100 active:scale-[0.98]"
+          >
+            Reject
+          </button>
+          <p className="mt-2 text-center text-[11px] text-gray-400">
+            Total {total} AED — after inspection approve or cancel. Inspection fees are non refundable.
+          </p>
         </>
       )}
     </div>

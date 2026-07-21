@@ -6,7 +6,7 @@ import electricImg from '../assets/electric.png'
 
 const HOME_SERVICES = [
   { name: 'AC cleaning & refilling', img: acImg, target: 'acService' },
-  { name: 'Plumbing', img: sinkImg },
+  { name: 'Plumber', img: sinkImg, target: 'plumberProviders' },
   { name: 'Washing machines', img: washerImg },
   { name: 'Electrical', img: electricImg },
 ]
