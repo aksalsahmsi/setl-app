@@ -40,29 +40,46 @@ export const TRANSITIONS = {
 
 export const ORDER_STATES = Object.keys(TRANSITIONS)
 
-// What the customer sees on the Orders screen. Awaiting payment got its own
-// badge in Phase 1 (pay-after-completion); Phase 4 gives the remaining
-// lifecycle/exception states their own labels ("On the way", ...).
-const IN_PROGRESS_STATES = [
-  'provider_en_route',
-  'in_progress',
-  'estimate_ready',
-  'approved',
-  'work_in_progress',
-  'work_done',
-  'disputed',
+// What the customer sees on the Orders screen — one label per state
+// (Phase 4: the full lifecycle is surfaced, including exception states).
+const STATUS_LABELS = {
+  draft: 'Scheduled',
+  scheduled: 'Scheduled',
+  provider_en_route: 'On the way',
+  in_progress: 'In progress',
+  estimate_ready: 'Estimate ready',
+  approved: 'Repair booked',
+  work_in_progress: 'In progress',
+  work_done: 'Done',
+  awaiting_payment: 'Awaiting payment',
+  payment_failed: 'Payment failed',
+  paid: 'Completed',
+  closed: 'Completed',
+  estimate_declined: 'Rejected',
+  estimate_expired: 'Rejected',
+  cancelled_by_customer: 'Cancelled',
+  cancelled_by_provider: 'Cancelled',
+  customer_no_show: 'No-show',
+  provider_no_show: 'No-show',
+  disputed: 'Disputed',
+}
+
+export function statusLabel(state) {
+  return STATUS_LABELS[state] ?? state
+}
+
+// Orders that still need something to happen (drives the tab-bar badge).
+const TERMINAL_STATES = [
+  'paid',
+  'closed',
+  'estimate_declined',
+  'estimate_expired',
+  'cancelled_by_customer',
+  'cancelled_by_provider',
 ]
 
-export function statusLabel(state, flowType) {
-  // An inspection order is "In progress" from the moment it's booked (the
-  // visit + estimate are in flight); a direct booking is just "Scheduled".
-  if (state === 'scheduled' || state === 'draft')
-    return flowType === 'inspection' ? 'In progress' : 'Scheduled'
-  if (state === 'awaiting_payment' || state === 'payment_failed') return 'Awaiting payment'
-  if (IN_PROGRESS_STATES.includes(state)) return 'In progress'
-  if (state === 'paid' || state === 'closed') return 'Completed'
-  if (state === 'estimate_declined' || state === 'estimate_expired') return 'Rejected'
-  return 'Cancelled' // cancellations + no-shows, unreachable from the UI today
+export function isActive(order) {
+  return !TERMINAL_STATES.includes(order.state)
 }
 
 // What tapping the order in the list does: pay the final invoice, follow the
@@ -91,7 +108,7 @@ export function createOrder({ meta, ...fields }) {
     state: 'scheduled',
     history: [{ state: 'scheduled', at: Date.now(), ...(meta && { meta }) }],
   }
-  return { ...order, status: statusLabel(order.state, order.flowType) }
+  return { ...order, status: statusLabel(order.state) }
 }
 
 export function canTransition(order, toState) {
@@ -107,7 +124,7 @@ export function transition(order, toState, meta) {
   return {
     ...order,
     state: toState,
-    status: statusLabel(toState, order.flowType),
+    status: statusLabel(toState),
     history: [...order.history, { state: toState, at: Date.now(), ...(meta && { meta }) }],
   }
 }

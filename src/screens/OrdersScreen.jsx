@@ -2,11 +2,17 @@ import GradientButton from '../components/GradientButton.jsx'
 import { orderAction } from '../data/orders.js'
 
 const STATUS_STYLES = {
-  'In progress': 'bg-[#EDE4FD] text-[#8442FF]',
   Scheduled: 'bg-blue-50 text-blue-600',
+  'On the way': 'bg-[#EDE4FD] text-[#8442FF]',
+  'In progress': 'bg-[#EDE4FD] text-[#8442FF]',
+  'Estimate ready': 'bg-[#8442FF] text-white',
+  'Repair booked': 'bg-blue-50 text-blue-600',
+  Done: 'bg-green-50 text-green-600',
   'Awaiting payment': 'bg-orange-50 text-orange-500',
+  'Payment failed': 'bg-red-50 text-red-500',
   Completed: 'bg-green-50 text-green-600',
   Rejected: 'bg-red-50 text-red-500',
+  // Cancelled / No-show / Disputed fall through to the gray default
 }
 
 export default function OrdersScreen({ orders, onOpenOrder, onBook }) {

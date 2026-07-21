@@ -20,7 +20,7 @@ import ProviderDoneScreen from './screens/provider/ProviderDoneScreen.jsx'
 import TabBar from './components/TabBar.jsx'
 import { SERVICES } from './data/providers.js'
 import WizardScreen from './screens/WizardScreen.jsx'
-import { advance, createOrder, recordEvent, transition } from './data/orders.js'
+import { advance, createOrder, isActive, recordEvent, transition } from './data/orders.js'
 
 const TAB_SCREENS = ['home', 'orders', 'profile']
 
@@ -43,32 +43,52 @@ function App() {
   const [successInfo, setSuccessInfo] = useState(null) // { variant, total, credit } for SuccessScreen
   const [payingOrderId, setPayingOrderId] = useState(null) // order open on the invoice screen
   const [providerProfile, setProviderProfile] = useState({ services: [], range: 15, slots: null })
-  const workTimers = useRef(new Set()) // order ids with a work-completion sim scheduled
+  const [toast, setToast] = useState(null) // simulated push notification { key, text }
+  const workTimers = useRef(new Set()) // `${orderId}:${state}` steps already scheduled
 
-  // Simulated work completion (Phase 1): a while after a direct booking is
-  // confirmed (or a repair approved), the provider "finishes" and the order
-  // lands in awaiting_payment — paid from the Orders tab. Later this comes
-  // from the backend / provider app.
+  function notify(text) {
+    setToast({ key: Date.now(), text })
+  }
+
+  // Toasts dismiss themselves (or on tap)
+  useEffect(() => {
+    if (!toast) return undefined
+    const t = setTimeout(() => setToast(null), 4000)
+    return () => clearTimeout(t)
+  }, [toast])
+
+  // The next move the simulated provider makes from this state (Phase 4:
+  // staged, so the lifecycle is visible on Orders). Inspection orders before
+  // the estimate are driven by the tracking screen instead. Later all of
+  // this comes from the backend / provider app.
+  function simStep(ord) {
+    if (ord.flowType === 'direct') {
+      if (ord.state === 'scheduled') return ['provider_en_route', 4000]
+      if (ord.state === 'provider_en_route') return ['in_progress', 4000]
+      if (ord.state === 'in_progress') return ['work_done', 5000]
+    }
+    if (ord.state === 'approved') return ['work_in_progress', 4000]
+    if (ord.state === 'work_in_progress') return ['work_done', 5000]
+    if (ord.state === 'work_done') return ['awaiting_payment', 1500]
+    return null
+  }
+
   useEffect(() => {
     orders.forEach((ord) => {
-      const path =
-        ord.flowType === 'direct' && ord.state === 'scheduled'
-          ? ['provider_en_route', 'in_progress', 'work_done', 'awaiting_payment']
-          : ord.state === 'approved'
-            ? ['work_in_progress', 'work_done', 'awaiting_payment']
-            : null
-      if (path && !workTimers.current.has(ord.id)) {
-        workTimers.current.add(ord.id)
-        setTimeout(() => {
-          setOrders((o) =>
-            o.map((x) =>
-              x.id === ord.id && (x.state === 'scheduled' || x.state === 'approved')
-                ? advance(x, path)
-                : x,
-            ),
-          )
-        }, 8000)
-      }
+      const step = simStep(ord)
+      if (!step) return
+      const key = `${ord.id}:${ord.state}`
+      if (workTimers.current.has(key)) return
+      workTimers.current.add(key)
+      const [next, delay] = step
+      setTimeout(() => {
+        setOrders((o) =>
+          o.map((x) => (x.id === ord.id && x.state === ord.state ? transition(x, next) : x)),
+        )
+        // Simulated push notifications on the transitions that matter
+        if (next === 'provider_en_route') notify(`${ord.provider.name} is on the way`)
+        if (next === 'awaiting_payment') notify('Work done — your invoice is ready in Orders')
+      }, delay)
     })
   }, [orders])
 
@@ -179,6 +199,7 @@ function App() {
           : ord,
       ),
     )
+    notify('Your estimate is ready — review and approve it')
   }
 
   function handleRejected(reason, note) {
@@ -366,13 +387,25 @@ function App() {
     ),
   }
 
-  const activeOrders = orders.filter((o) => o.status === 'In progress').length
+  const activeOrders = orders.filter(isActive).length
 
   return (
     <div className="relative mx-auto min-h-screen w-full max-w-[375px] overflow-hidden bg-white shadow-xl">
       <div key={screen} className="screen-enter">
         {screens[screen]}
       </div>
+      {/* Simulated push notification (Phase 4) */}
+      {toast && (
+        <button
+          type="button"
+          key={toast.key}
+          onClick={() => setToast(null)}
+          className="pop-enter absolute top-3 left-1/2 z-50 w-[92%] -translate-x-1/2 cursor-pointer rounded-2xl border border-gray-100 bg-white p-3 text-left shadow-[0_6px_24px_rgba(0,0,0,0.18)]"
+        >
+          <span className="text-[11px] font-semibold text-[#8442FF]">Setl</span>
+          <span className="block text-sm text-black">{toast.text}</span>
+        </button>
+      )}
       {mode === 'customer' && TAB_SCREENS.includes(screen) && (
         <TabBar active={screen} onChange={setScreen} ordersBadge={activeOrders} />
       )}

@@ -18,6 +18,12 @@ export default function OrderTrackingScreen({ booking, counts, onProceedToPay, o
   const [question, setQuestion] = useState('')
   const [questionSent, setQuestionSent] = useState(false)
   const [quoteRequested, setQuoteRequested] = useState(false)
+  const [arrived, setArrived] = useState(false) // staging: en route -> inspecting
+
+  useEffect(() => {
+    const t = setTimeout(() => setArrived(true), 2000)
+    return () => clearTimeout(t)
+  }, [])
 
   // Simulated for now: the inspector's product list "arrives" a few seconds
   // after the visit. Later this comes from the backend instead.
@@ -67,7 +73,9 @@ export default function OrderTrackingScreen({ booking, counts, onProceedToPay, o
       {!products ? (
         <>
           <p className="mt-5 text-center text-sm text-gray-400">
-            Inspection in progress — the products &amp; prices will show here once it&apos;s done
+            {arrived
+              ? 'Inspection in progress — the products & prices will show here once it’s done'
+              : `${booking.provider.name} is on the way to you`}
           </p>
           {/* Skeleton placeholders, like the design */}
           {[1, 2, 3].map((i) => (
