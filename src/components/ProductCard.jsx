@@ -21,13 +21,19 @@ function ProductIcon({ icon }) {
   )
 }
 
-// Product proposed by the inspector: name, quantity, price, and the fair
-// market price range (transparency feature from the design).
+// One-glance verdict on how this provider's price compares to the market.
+function priceVerdict(unit, lo, hi) {
+  if (unit < lo) return { label: 'Below market', className: 'bg-green-50 text-green-600', good: true }
+  if (unit <= hi) return { label: 'Fair price', className: 'bg-green-50 text-green-600', good: true }
+  return { label: 'Above market', className: 'bg-orange-50 text-orange-500', good: false }
+}
+
+// Product proposed by the inspector: name, quantity, price, and a clear
+// comparison against the typical market price.
 export default function ProductCard({ product }) {
   const [lo, hi] = product.market
-  // where this provider's unit price sits inside the market range (0..1)
   const unit = product.price / product.qty
-  const pos = Math.max(0, Math.min(1, (unit - lo) / (hi - lo)))
+  const verdict = priceVerdict(unit, lo, hi)
 
   return (
     <div className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
@@ -43,22 +49,22 @@ export default function ProductCard({ product }) {
           <span className="text-[15px] font-semibold text-black">{product.price} AED</span>
         </div>
       </div>
-      <div className="w-24 shrink-0">
-        <p className="rounded-lg bg-[#F6F5F8] px-2 py-1 text-center text-[11px] text-gray-500">
-          Market price
+      <div className="shrink-0 text-right">
+        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium ${verdict.className}`}>
+          {verdict.good ? (
+            <svg width="10" height="8" viewBox="0 0 24 18" fill="none">
+              <path d="m2 9 7 7L22 2" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          ) : (
+            <svg width="8" height="10" viewBox="0 0 12 16" fill="none">
+              <path d="M6 15V2M1 7l5-5 5 5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+          {verdict.label}
+        </span>
+        <p className="mt-1.5 text-[11px] text-gray-400">
+          Market: {lo}–{hi} AED
         </p>
-        <div className="relative mx-1 mt-2 h-[3px] rounded bg-gray-200">
-          <span className="absolute -top-[2.5px] h-2 w-2 rounded-full border border-[#8442FF] bg-white" style={{ left: '-2px' }} />
-          <span className="absolute -top-[2.5px] h-2 w-2 rounded-full border border-[#8442FF] bg-white" style={{ right: '-2px' }} />
-          <span
-            className="absolute -top-1 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-[#8442FF]"
-            style={{ left: `${pos * 100}%` }}
-          />
-        </div>
-        <div className="mt-1 flex justify-between text-[10px] text-gray-400">
-          <span>{lo} aed</span>
-          <span>{hi} aed</span>
-        </div>
       </div>
     </div>
   )

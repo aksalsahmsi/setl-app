@@ -2,6 +2,7 @@ import { useState } from 'react'
 import GradientButton from '../components/GradientButton.jsx'
 import AppointmentCard from '../components/AppointmentCard.jsx'
 import ProgressSteps from '../components/ProgressSteps.jsx'
+import DateTimeSheet from '../components/DateTimeSheet.jsx'
 import { AC_PRICE_PER_UNIT, SERVICES } from '../data/providers.js'
 
 const PAYMENT_METHODS = [
@@ -36,11 +37,12 @@ function PayIcon({ id }) {
   )
 }
 
-export default function OrderDetailsScreen({ booking, counts, onPay, onBack }) {
+export default function OrderDetailsScreen({ booking, counts, onPay, onBack, onReschedule, onChangeProvider }) {
   const [method, setMethod] = useState('apple')
   const [voucher, setVoucher] = useState('')
   const [voucherState, setVoucherState] = useState(null) // null | 'invalid' | number (rate)
   const [paying, setPaying] = useState(false)
+  const [rescheduling, setRescheduling] = useState(false) // date/time sheet open
 
   const isInspection = booking.variant === 'inspection'
   const isMaintenance = booking.variant === 'maintenance'
@@ -73,7 +75,7 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack }) {
   }
 
   return (
-    <div className="font-poppins flex min-h-screen flex-col bg-[#F5F4F7] px-3 pt-5 pb-6">
+    <div className="font-poppins relative flex min-h-screen flex-col bg-[#F5F4F7] px-3 pt-5 pb-6">
       <div className="relative">
         <button
           type="button"
@@ -110,7 +112,11 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack }) {
               </p>
               <p className="text-sm text-gray-400">{booking.time}</p>
             </div>
-            <button type="button" onClick={onBack} className="cursor-pointer text-[15px] text-[#8442FF]">
+            <button
+              type="button"
+              onClick={() => setRescheduling(true)}
+              className="cursor-pointer text-[15px] text-[#8442FF]"
+            >
               Change
             </button>
           </div>
@@ -134,13 +140,13 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack }) {
         </>
       )}
 
-      {/* Provider / appointment card */}
+      {/* Provider / appointment card; Change picks a different provider */}
       <div className="mt-5">
         <AppointmentCard
           booking={booking}
           label={isInspection ? service.inspectionLabel : service.maintenanceLabel}
           price={total}
-          onChange={() => {}}
+          onChange={isInspection ? onChangeProvider : undefined}
         />
       </div>
 
@@ -258,6 +264,18 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack }) {
       >
         {isInspection ? 'Confirm' : 'Pay'}
       </GradientButton>
+
+      {rescheduling && (
+        <DateTimeSheet
+          provider={booking.provider}
+          title="Inspection time & date"
+          onClose={() => setRescheduling(false)}
+          onConfirm={({ date, time }) => {
+            onReschedule(date, time)
+            setRescheduling(false)
+          }}
+        />
+      )}
     </div>
   )
 }

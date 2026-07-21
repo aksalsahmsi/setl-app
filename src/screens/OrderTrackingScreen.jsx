@@ -70,7 +70,10 @@ export default function OrderTrackingScreen({ booking, counts, onProceedToPay, o
         </>
       ) : (
         <>
-          <h2 className="mt-5 mb-2 text-lg font-semibold text-black">Products</h2>
+          <h2 className="mt-5 text-lg font-semibold text-black">Products</h2>
+          <p className="mb-2 text-xs text-gray-400">
+            Each price is compared with the typical market price, so you know it&apos;s fair.
+          </p>
           <div className="screen-enter flex flex-col gap-3">
             {products.map((p) => (
               <ProductCard key={p.name} product={p} />

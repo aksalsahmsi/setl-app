@@ -98,10 +98,10 @@ function App() {
     setScreen('success')
   }
 
-  function handleRejected(reason) {
+  function handleRejected(reason, note) {
     setOrders((o) =>
       o.map((ord) =>
-        ord.id === booking.orderId ? { ...ord, status: 'Rejected', reason } : ord,
+        ord.id === booking.orderId ? { ...ord, status: 'Rejected', reason, note } : ord,
       ),
     )
     setBooking(null)
@@ -172,6 +172,8 @@ function App() {
         onBack={() =>
           setScreen(booking?.variant === 'maintenance' ? 'tracking' : 'providers')
         }
+        onReschedule={(date, time) => setBooking({ ...booking, date, time })}
+        onChangeProvider={() => setScreen('providers')}
         onPay={handlePaid}
       />
     ),
