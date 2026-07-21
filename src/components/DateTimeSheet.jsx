@@ -9,7 +9,9 @@ export default function DateTimeSheet({ provider, title, onConfirm, onClose }) {
   const [time, setTime] = useState(TIMES[0])
 
   return (
-    <div className="absolute inset-0 z-20 flex flex-col justify-end">
+    // fixed = pinned to the visible screen (not the page), so the sheet
+    // always slides up over whatever the user is currently looking at
+    <div className="fixed inset-0 z-50 mx-auto flex w-full max-w-[375px] flex-col justify-end">
       {/* dimmed backdrop */}
       <div className="fade-enter absolute inset-0 bg-black/30" onClick={onClose} />
 
