@@ -72,7 +72,7 @@ export default function OrderTrackingScreen({ booking, counts, onProceedToPay, o
         <>
           <h2 className="mt-5 text-lg font-semibold text-black">Products</h2>
           <p className="mb-2 text-xs text-gray-400">
-            Each price is compared with the typical market price, so you know it&apos;s fair.
+            Each price is compared with the typical range from recent Setl jobs, so you know it&apos;s fair.
           </p>
           <div className="screen-enter flex flex-col gap-3">
             {products.map((p) => (
@@ -92,7 +92,7 @@ export default function OrderTrackingScreen({ booking, counts, onProceedToPay, o
             Reject
           </button>
           <p className="mt-2 text-center text-[11px] text-gray-400">
-            Total {total} AED — after inspection approve or cancel. Inspection fees are non refundable.
+            Total {total} AED. Your {booking.price} AED inspection fee is credited toward the repair if you approve.
           </p>
         </>
       )}

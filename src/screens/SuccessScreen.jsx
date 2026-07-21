@@ -24,7 +24,7 @@ export default function SuccessScreen({ total, variant, onDone, onTrack }) {
       <p className="mt-2 text-white/90">
         {total} AED paid.{' '}
         {isInspection
-          ? 'Your inspector is on the way — the price will show on your order once the visit is done.'
+          ? 'Your inspector is on the way — the itemized quote will show on your order once the visit is done. The fee is credited toward your repair if you proceed.'
           : 'Your provider is on the way!'}
       </p>
       {isInspection ? (

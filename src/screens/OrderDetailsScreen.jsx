@@ -100,8 +100,8 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack, onR
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-500 text-lg font-bold text-white">
                 !
               </span>
-              Please note: a prior inspection of your issue is necessary before proceeding, ensuring
-              a seamless and efficient experience with our services.
+              An inspection visit comes first so you get a clear, itemized quote. The inspection
+              fee is credited toward your repair if you proceed.
             </p>
           )}
           <h2 className="mt-4 text-lg font-semibold text-black">Timing</h2>
@@ -152,7 +152,8 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack, onR
 
       {isInspection && (
         <p className="mt-1 px-2 text-[11px] text-gray-400">
-          After inspection approve or cancel maintenance. Inspection fees are non refundable.
+          After the inspection you approve or decline the repair. The fee is credited toward the
+          repair if you proceed — non-refundable otherwise.
         </p>
       )}
 

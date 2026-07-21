@@ -30,8 +30,8 @@ export default function ProvidersScreen({ service: serviceId, variant, onConfirm
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-500 text-lg font-bold text-white">
               !
             </span>
-            Please note: a prior inspection of your issue is necessary before proceeding, ensuring a
-            seamless and efficient experience with our services.
+            An inspection visit comes first so you get a clear, itemized quote. The inspection fee
+            is credited toward your repair if you proceed.
           </p>
         )}
 

@@ -21,15 +21,17 @@ function ProductIcon({ icon }) {
   )
 }
 
-// One-glance verdict on how this provider's price compares to the market.
+// One-glance verdict on how this provider's price compares to the typical
+// range from recent Setl jobs (defensible wording — we can substantiate our
+// own job data, not "the market").
 function priceVerdict(unit, lo, hi) {
-  if (unit < lo) return { label: 'Below market', className: 'bg-green-50 text-green-600', good: true }
-  if (unit <= hi) return { label: 'Fair price', className: 'bg-green-50 text-green-600', good: true }
-  return { label: 'Above market', className: 'bg-orange-50 text-orange-500', good: false }
+  if (unit < lo) return { label: 'Below typical Setl range', className: 'bg-green-50 text-green-600', good: true }
+  if (unit <= hi) return { label: 'Within typical Setl range', className: 'bg-green-50 text-green-600', good: true }
+  return { label: 'Above typical Setl range', className: 'bg-orange-50 text-orange-500', good: false }
 }
 
 // Product proposed by the inspector: name, quantity, price, and a clear
-// comparison against the typical market price.
+// comparison against the typical range from recent Setl jobs.
 export default function ProductCard({ product }) {
   const [lo, hi] = product.market
   const unit = product.price / product.qty
@@ -49,8 +51,8 @@ export default function ProductCard({ product }) {
           <span className="text-[15px] font-semibold text-black">{product.price} AED</span>
         </div>
       </div>
-      <div className="shrink-0 text-right">
-        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium ${verdict.className}`}>
+      <div className="w-[118px] shrink-0 text-right">
+        <span className={`inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1 text-left text-[11px] leading-tight font-medium ${verdict.className}`}>
           {verdict.good ? (
             <svg width="10" height="8" viewBox="0 0 24 18" fill="none">
               <path d="m2 9 7 7L22 2" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
@@ -63,7 +65,7 @@ export default function ProductCard({ product }) {
           {verdict.label}
         </span>
         <p className="mt-1.5 text-[11px] text-gray-400">
-          Market: {lo}–{hi} AED
+          Recent Setl jobs: {lo}–{hi} AED
         </p>
       </div>
     </div>
