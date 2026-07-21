@@ -1,27 +1,32 @@
 import { Fragment } from 'react'
 
-// One consistent 3-step journey track: Inspection -> Products -> Pay.
-// `current` is the step the customer is on; earlier steps render as done,
+// THE one journey track, used everywhere the flow appears (providers list,
+// order tracking, maintenance checkout): Inspection -> Approve maintenance -> Pay.
+// `current`: 'inspection' | 'approve' | 'pay'. Earlier steps render as done,
 // later ones as not-yet. Filled segments run flush into the circles and
 // animate in when the screen mounts.
-const STEPS = ['Inspection', 'Products', 'Pay']
+const STEPS = [
+  { key: 'inspection', label: 'Inspection' },
+  { key: 'approve', label: 'Approve maintenance' },
+  { key: 'pay', label: 'Pay' },
+]
 
 export default function ProgressSteps({ current }) {
-  const activeIdx = STEPS.indexOf(current)
+  const activeIdx = STEPS.findIndex((s) => s.key === current)
 
   return (
     <div className="flex items-start px-3">
-      {STEPS.map((label, i) => {
+      {STEPS.map((step, i) => {
         const done = i < activeIdx
         const active = i === activeIdx
         return (
-          <Fragment key={label}>
+          <Fragment key={step.key}>
             {i > 0 && (
               <div className="relative z-0 mx-[-12px] mt-[21px] h-[3px] flex-1 overflow-hidden bg-gray-200">
                 {(done || active) && <div className="fill-enter h-full w-full bg-[#8442FF]" />}
               </div>
             )}
-            <div className="relative z-10 flex w-16 flex-col items-center">
+            <div className="relative z-10 flex w-20 flex-col items-center">
               <div
                 className={`flex h-11 w-11 items-center justify-center rounded-full text-[15px] font-semibold ${
                   done
@@ -39,8 +44,12 @@ export default function ProgressSteps({ current }) {
                   i + 1
                 )}
               </div>
-              <p className={`mt-1 text-xs ${active ? 'font-semibold text-black' : 'text-gray-500'}`}>
-                {label}
+              <p
+                className={`mt-1 text-center text-xs leading-tight ${
+                  active ? 'font-semibold text-black' : 'text-gray-500'
+                }`}
+              >
+                {step.label}
               </p>
             </div>
           </Fragment>

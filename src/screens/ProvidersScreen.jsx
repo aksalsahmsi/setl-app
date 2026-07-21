@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import GradientHeader from '../components/GradientHeader.jsx'
 import ProviderCard from '../components/ProviderCard.jsx'
-import Stepper from '../components/Stepper.jsx'
+import ProgressSteps from '../components/ProgressSteps.jsx'
 import DateTimeSheet from '../components/DateTimeSheet.jsx'
 import { SERVICES } from '../data/providers.js'
 
@@ -36,7 +36,9 @@ export default function ProvidersScreen({ service: serviceId, variant, onConfirm
         )}
 
         {isInspection ? (
-          <Stepper />
+          <div className="pt-4">
+            <ProgressSteps current="inspection" />
+          </div>
         ) : (
           <div className="mx-4 mt-4 flex h-12 items-center gap-3 rounded-2xl bg-white px-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
             <svg width="18" height="18" viewBox="0 0 22 22" fill="none" stroke="#9C9AA5" strokeWidth="2">

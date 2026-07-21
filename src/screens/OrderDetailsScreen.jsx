@@ -159,7 +159,7 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack, onR
       {/* Progress (maintenance flow): products accepted, paying now */}
       {isMaintenance && (
         <div className="mt-6">
-          <ProgressSteps current="Pay" />
+          <ProgressSteps current="pay" />
         </div>
       )}
 
