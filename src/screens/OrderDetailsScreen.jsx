@@ -27,15 +27,24 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack, onR
   // What is being paid for depends on the flow:
   //  - inspection booking -> only the standardized inspection fee
   //  - maintenance        -> the products the inspector proposed (accepted by the customer)
-  //  - direct booking     -> the selected AC services
+  //  - direct hourly      -> the provider's rate x hours needed
+  //  - direct AC          -> the selected AC services
   const items = isInspection
     ? [{ label: 'Inspection visit', qty: 1, price: booking.price }]
     : isMaintenance
       ? booking.products.map((p) => ({ label: p.name, qty: p.qty, price: p.price }))
-      : [
-          { label: 'Ac refilling', qty: counts.refill, price: counts.refill * AC_PRICE_PER_UNIT },
-          { label: 'Ac Cleaning', qty: counts.clean, price: counts.clean * AC_PRICE_PER_UNIT },
-        ].filter((it) => it.qty > 0)
+      : service.pricingModel === 'hourly'
+        ? [
+            {
+              label: `${service.label} hour (${booking.provider.bookingFee} AED/hr)`,
+              qty: booking.hours,
+              price: booking.hours * booking.provider.bookingFee,
+            },
+          ]
+        : [
+            { label: 'Ac refilling', qty: counts.refill, price: counts.refill * AC_PRICE_PER_UNIT },
+            { label: 'Ac Cleaning', qty: counts.clean, price: counts.clean * AC_PRICE_PER_UNIT },
+          ].filter((it) => it.qty > 0)
 
   const subtotal = items.reduce((sum, it) => sum + it.price, 0)
   // 10% off accepted maintenance (mockup 11a), 5% off direct bookings (mockup 13)

@@ -6,6 +6,7 @@ import electricImg from '../assets/electric.png'
 
 const HOME_SERVICES = [
   { name: 'AC cleaning & refilling', img: acImg, target: 'acService' },
+  { name: 'House cleaning', gradient: 'linear-gradient(135deg,#8442FF,#C05CF7)', target: 'cleaningService' },
   { name: 'Plumber', img: sinkImg, target: 'plumberProviders' },
   { name: 'Washing machines', img: washerImg },
   { name: 'Electrical', img: electricImg },

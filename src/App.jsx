@@ -4,6 +4,7 @@ import OtpScreen from './screens/OtpScreen.jsx'
 import LocationScreen from './screens/LocationScreen.jsx'
 import HomeScreen from './screens/HomeScreen.jsx'
 import AcServiceScreen from './screens/AcServiceScreen.jsx'
+import CleaningServiceScreen from './screens/CleaningServiceScreen.jsx'
 import ProvidersScreen from './screens/ProvidersScreen.jsx'
 import OrderDetailsScreen from './screens/OrderDetailsScreen.jsx'
 import OrderTrackingScreen from './screens/OrderTrackingScreen.jsx'
@@ -34,6 +35,7 @@ function App() {
   const [screen, setScreen] = useState('login')
   const [phone, setPhone] = useState('')
   const [counts, setCounts] = useState({ refill: 1, clean: 1 })
+  const [hours, setHours] = useState(2) // hourly services (house cleaning)
   const [flow, setFlow] = useState({ service: 'ac', variant: 'booking' }) // which provider list is open
   const [booking, setBooking] = useState(null) // { provider, date, time, variant, service, ... }
   const [orders, setOrders] = useState([])
@@ -82,6 +84,7 @@ function App() {
         time,
         variant,
         service,
+        hours, // used by hourly services (rate x hours at checkout)
         // Inspection pricing is Setl's, standardized per service (decision B)
         price:
           variant === 'inspection' ? SERVICES[service].standardInspectionFee : provider.bookingFee,
@@ -188,6 +191,7 @@ function App() {
     setScreen('login')
     setPhone('')
     setCounts({ refill: 1, clean: 1 })
+    setHours(2)
     setBooking(null)
     setOrders([])
     setSuccessInfo(null)
@@ -242,12 +246,22 @@ function App() {
         onBack={() => setScreen('home')}
       />
     ),
+    cleaningService: (
+      <CleaningServiceScreen
+        hours={hours}
+        setHours={setHours}
+        onSearchProviders={() => openProviders('cleaning', 'booking')}
+        onBack={() => setScreen('home')}
+      />
+    ),
     providers: (
       <ProvidersScreen
         service={flow.service}
         variant={flow.variant}
         onConfirm={confirmBooking(flow.service, flow.variant)}
-        onBack={() => setScreen(flow.service === 'ac' ? 'acService' : 'home')}
+        onBack={() =>
+          setScreen({ ac: 'acService', cleaning: 'cleaningService' }[flow.service] ?? 'home')
+        }
       />
     ),
     orderDetails: (

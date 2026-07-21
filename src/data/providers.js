@@ -31,6 +31,13 @@ export const PLUMBER_PROVIDERS = [
   { id: 'pl3', name: 'Nu Flow', inspectionFee: 18, bookingFee: 18, rating: 4.7, color: '#1D3F8F', perHour: true, slots: ['Today 1:45pm', 'Tomorrow 10:30am', 'Tomorrow 4:00pm'] },
 ]
 
+// Category 1 (hourly, no inspection): rate is per hour.
+export const CLEANING_PROVIDERS = [
+  { id: 'cl1', name: 'Sparkle Home Cleaning', bookingFee: 25, rating: 4.8, color: '#7C3AED', perHour: true, slots: ['Today 3:00pm', 'Today 5:30pm', 'Tomorrow 9:00am'] },
+  { id: 'cl2', name: 'Maid in UAE', bookingFee: 30, rating: 4.9, color: '#0FA3A3', perHour: true, slots: ['Today 1:30pm', 'Tomorrow 8:30am', 'Tomorrow 2:00pm'] },
+  { id: 'cl3', name: 'CleanCo Services', bookingFee: 22, rating: 4.5, color: '#E0442B', perHour: true, slots: ['Tomorrow 10:00am', 'Tomorrow 12:30pm', 'Tomorrow 5:00pm'] },
+]
+
 export const PREVIOUS_PROVIDERS = [
   { id: 'pp1', name: 'AAA', color: '#0FA3C4' },
   { id: 'pp2', name: 'UltraTec', color: '#2E9E4F' },
@@ -99,6 +106,17 @@ export const SERVICES = {
     symptoms: ['Leak or dripping', 'Blocked drain', 'Low water pressure', 'No hot water', 'Bad smell from drain'],
     previousProviders: PREVIOUS_PROVIDERS,
     listTitle: { inspection: 'Plumber' },
+  },
+  // Category 1: hourly, booked directly, no inspection offered (so no
+  // inspectionLabel / standardInspectionFee)
+  cleaning: {
+    label: 'House cleaning',
+    maintenanceLabel: 'House cleaning',
+    providers: CLEANING_PROVIDERS,
+    requiresInspection: false,
+    pricingModel: 'hourly',
+    bookingSheetTitle: 'House cleaning',
+    listTitle: { booking: 'Cleaning providers' },
   },
 }
 
