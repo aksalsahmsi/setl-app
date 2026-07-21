@@ -57,6 +57,19 @@ export const REJECT_REASONS = ['Poor quality', 'High price', 'I have my own prod
 // Everything service-specific in one place. Adding a new service to the
 // customer app = adding an entry here (plus its screen for choosing options,
 // if it needs one).
+//
+// Schema (PLAN.md Phase 0):
+//   pricingModel          'fixed' (priced per unit upfront) | 'hourly'
+//                         (rate x hours, Phase 2) | 'estimate' (price known
+//                         only after the inspection)
+//   requiresInspection    true = can't book the work directly; an inspection
+//                         visit always comes first
+//   standardInspectionFee the standardized Setl fee (AED) — decision B says
+//                         inspection pricing is ours, not per-provider; the
+//                         UI switches from provider.inspectionFee to this in
+//                         Phase 1
+//   problemArea/symptoms  what the symptom-first wizard (Phase 3) shows for
+//                         this service
 export const SERVICES = {
   ac: {
     label: 'AC cleaning & refilling',
@@ -65,6 +78,10 @@ export const SERVICES = {
     providers: PROVIDERS,
     // AC can be booked directly, so no "inspection first" notice
     requiresInspection: false,
+    pricingModel: 'fixed',
+    standardInspectionFee: 30,
+    problemArea: 'AC & cooling',
+    symptoms: ['Not cooling', 'Water leaking', 'Bad smell', 'Strange noise', 'Not turning on'],
     bookingSheetTitle: 'AC Refilling & Cleaning',
     listTitle: { booking: 'Providers', inspection: 'Inspection options' },
   },
@@ -74,6 +91,10 @@ export const SERVICES = {
     maintenanceLabel: 'Plumbing maintenance',
     providers: PLUMBER_PROVIDERS,
     requiresInspection: true,
+    pricingModel: 'estimate',
+    standardInspectionFee: 20,
+    problemArea: 'Plumbing & water',
+    symptoms: ['Leak or dripping', 'Blocked drain', 'Low water pressure', 'No hot water', 'Bad smell from drain'],
     previousProviders: PREVIOUS_PROVIDERS,
     listTitle: { inspection: 'Plumber' },
   },

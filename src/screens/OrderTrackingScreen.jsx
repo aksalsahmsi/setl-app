@@ -10,14 +10,16 @@ import { getInspectionProducts } from '../data/providers.js'
 // gray skeleton boxes; when the inspector finishes, the proposed products
 // appear with their prices and the fair market range. The customer accepts
 // (Next) or rejects with a reason.
-export default function OrderTrackingScreen({ booking, counts, onProceedToPay, onReject, onBack }) {
+export default function OrderTrackingScreen({ booking, counts, onProceedToPay, onReject, onBack, onEstimateReady }) {
   const [products, setProducts] = useState(null)
 
   // Simulated for now: the inspector's product list "arrives" a few seconds
   // after the visit. Later this comes from the backend instead.
   useEffect(() => {
     const t = setTimeout(() => {
-      setProducts(getInspectionProducts(booking.service, counts))
+      const arrived = getInspectionProducts(booking.service, counts)
+      setProducts(arrived)
+      onEstimateReady?.(arrived) // advances the order to estimate_ready
     }, 4000)
     return () => clearTimeout(t)
   }, [booking.service, counts])

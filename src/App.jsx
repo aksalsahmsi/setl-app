@@ -17,6 +17,7 @@ import TimeSlotsScreen from './screens/provider/TimeSlotsScreen.jsx'
 import ProviderDoneScreen from './screens/provider/ProviderDoneScreen.jsx'
 import TabBar from './components/TabBar.jsx'
 import { SERVICES } from './data/providers.js'
+import { advance, createOrder, transition } from './data/orders.js'
 
 const TAB_SCREENS = ['home', 'orders', 'profile']
 
@@ -57,51 +58,65 @@ function App() {
   function handlePaid(total) {
     const service = SERVICES[booking.service]
     if (booking.variant === 'inspection') {
-      const id = orders.length + 1
-      setOrders((o) => [
-        ...o,
-        {
-          id,
-          provider: booking.provider,
-          date: booking.date,
-          time: booking.time,
-          service: service.inspectionLabel,
-          status: 'In progress',
-          total,
-        },
-      ])
-      setBooking({ ...booking, total, orderId: id })
+      const order = createOrder({
+        serviceKey: booking.service,
+        service: service.inspectionLabel,
+        flowType: 'inspection',
+        provider: booking.provider,
+        date: booking.date,
+        time: booking.time,
+        total,
+      })
+      setOrders((o) => [...o, order])
+      setBooking({ ...booking, total, orderId: order.id })
     } else if (booking.variant === 'maintenance') {
+      // Approve + pay in one tap for now (pay-after-completion is Phase 1);
+      // the history still records the full approved -> paid path.
       setOrders((o) =>
         o.map((ord) =>
           ord.id === booking.orderId
-            ? { ...ord, status: 'Completed', service: service.maintenanceLabel, total: ord.total + total }
+            ? {
+                ...advance(ord, ['approved', 'work_in_progress', 'work_done', 'awaiting_payment', 'paid'], { amount: total }),
+                service: service.maintenanceLabel,
+                total: ord.total + total,
+              }
             : ord,
         ),
       )
       setBooking({ ...booking, total })
     } else {
-      setOrders((o) => [
-        ...o,
-        {
-          id: o.length + 1,
-          provider: booking.provider,
-          date: booking.date,
-          time: booking.time,
-          service: service.maintenanceLabel,
-          status: 'Scheduled',
-          total,
-        },
-      ])
+      const order = createOrder({
+        serviceKey: booking.service,
+        service: service.maintenanceLabel,
+        flowType: 'direct',
+        provider: booking.provider,
+        date: booking.date,
+        time: booking.time,
+        total,
+        meta: { paidUpfront: true }, // pre-Phase-1 behavior, noted in history
+      })
+      setOrders((o) => [...o, order])
       setBooking({ ...booking, total })
     }
     setScreen('success')
   }
 
+  // The inspector's estimate arrived (simulated in the tracking screen).
+  // Guarded on 'scheduled' so revisiting the screen can't double-advance.
+  function handleEstimateReady(products) {
+    setOrders((o) =>
+      o.map((ord) =>
+        ord.id === booking.orderId && ord.state === 'scheduled'
+          ? advance(ord, ['provider_en_route', 'in_progress', 'estimate_ready'], { products })
+          : ord,
+      ),
+    )
+  }
+
   function handleRejected(reason, note) {
     setOrders((o) =>
       o.map((ord) =>
-        ord.id === booking.orderId ? { ...ord, status: 'Rejected', reason, note } : ord,
+        ord.id === booking.orderId ? transition(ord, 'estimate_declined', { reason, note }) : ord,
       ),
     )
     setBooking(null)
@@ -182,6 +197,7 @@ function App() {
         booking={booking}
         counts={counts}
         onBack={() => setScreen('orders')}
+        onEstimateReady={handleEstimateReady}
         onProceedToPay={(products) => {
           setBooking({ ...booking, variant: 'maintenance', products })
           setScreen('orderDetails')
