@@ -16,6 +16,7 @@ import CoverageScreen from './screens/provider/CoverageScreen.jsx'
 import TimeSlotsScreen from './screens/provider/TimeSlotsScreen.jsx'
 import ProviderDoneScreen from './screens/provider/ProviderDoneScreen.jsx'
 import TabBar from './components/TabBar.jsx'
+import { SERVICES } from './data/providers.js'
 
 const TAB_SCREENS = ['home', 'orders', 'profile']
 
@@ -29,9 +30,15 @@ function App() {
   const [screen, setScreen] = useState('login')
   const [phone, setPhone] = useState('')
   const [counts, setCounts] = useState({ refill: 1, clean: 1 })
+  const [flow, setFlow] = useState({ service: 'ac', variant: 'booking' }) // which provider list is open
   const [booking, setBooking] = useState(null) // { provider, date, time, variant, service, ... }
   const [orders, setOrders] = useState([])
   const [providerProfile, setProviderProfile] = useState({ services: [], range: 15, slots: null })
+
+  function openProviders(service, variant) {
+    setFlow({ service, variant })
+    setScreen('providers')
+  }
 
   function confirmBooking(service, variant) {
     return (provider, date, time) => {
@@ -47,9 +54,8 @@ function App() {
     }
   }
 
-  const serviceName = (s) => (s === 'plumber' ? 'Plumber' : 'AC cleaning & refilling')
-
   function handlePaid(total) {
+    const service = SERVICES[booking.service]
     if (booking.variant === 'inspection') {
       const id = orders.length + 1
       setOrders((o) => [
@@ -59,7 +65,7 @@ function App() {
           provider: booking.provider,
           date: booking.date,
           time: booking.time,
-          service: `${booking.service === 'plumber' ? 'Plumber' : 'AC'} inspection`,
+          service: service.inspectionLabel,
           status: 'In progress',
           total,
         },
@@ -69,7 +75,7 @@ function App() {
       setOrders((o) =>
         o.map((ord) =>
           ord.id === booking.orderId
-            ? { ...ord, status: 'Completed', service: serviceName(booking.service), total: ord.total + total }
+            ? { ...ord, status: 'Completed', service: service.maintenanceLabel, total: ord.total + total }
             : ord,
         ),
       )
@@ -82,7 +88,7 @@ function App() {
           provider: booking.provider,
           date: booking.date,
           time: booking.time,
-          service: serviceName(booking.service),
+          service: service.maintenanceLabel,
           status: 'Scheduled',
           total,
         },
@@ -125,7 +131,15 @@ function App() {
     ),
     otp: <OtpScreen onVerify={() => setScreen(mode === 'provider' ? 'chooseService' : 'location')} />,
     location: <LocationScreen onConfirm={() => setScreen('home')} />,
-    home: <HomeScreen onOpenService={(target) => setScreen(target)} />,
+    home: (
+      <HomeScreen
+        onOpenService={(target) => {
+          // plumber requires an inspection first, so it goes straight to providers
+          if (target === 'plumberProviders') openProviders('plumber', 'inspection')
+          else setScreen(target)
+        }}
+      />
+    ),
     orders: (
       <OrdersScreen
         orders={orders}
@@ -138,33 +152,17 @@ function App() {
       <AcServiceScreen
         counts={counts}
         setCounts={setCounts}
-        onSearchProviders={() => setScreen('providers')}
-        onBookInspection={() => setScreen('inspection')}
+        onSearchProviders={() => openProviders('ac', 'booking')}
+        onBookInspection={() => openProviders('ac', 'inspection')}
         onBack={() => setScreen('home')}
       />
     ),
     providers: (
       <ProvidersScreen
-        service="ac"
-        variant="booking"
-        onConfirm={confirmBooking('ac', 'booking')}
-        onBack={() => setScreen('acService')}
-      />
-    ),
-    inspection: (
-      <ProvidersScreen
-        service="ac"
-        variant="inspection"
-        onConfirm={confirmBooking('ac', 'inspection')}
-        onBack={() => setScreen('acService')}
-      />
-    ),
-    plumberProviders: (
-      <ProvidersScreen
-        service="plumber"
-        variant="inspection"
-        onConfirm={confirmBooking('plumber', 'inspection')}
-        onBack={() => setScreen('home')}
+        service={flow.service}
+        variant={flow.variant}
+        onConfirm={confirmBooking(flow.service, flow.variant)}
+        onBack={() => setScreen(flow.service === 'ac' ? 'acService' : 'home')}
       />
     ),
     orderDetails: (
@@ -172,15 +170,7 @@ function App() {
         booking={booking}
         counts={counts}
         onBack={() =>
-          setScreen(
-            booking?.variant === 'maintenance'
-              ? 'tracking'
-              : booking?.service === 'plumber'
-                ? 'plumberProviders'
-                : booking?.variant === 'inspection'
-                  ? 'inspection'
-                  : 'providers',
-          )
+          setScreen(booking?.variant === 'maintenance' ? 'tracking' : 'providers')
         }
         onPay={handlePaid}
       />

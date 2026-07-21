@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import GradientButton from '../components/GradientButton.jsx'
-import { AC_PRICE_PER_UNIT } from '../data/providers.js'
+import AppointmentCard from '../components/AppointmentCard.jsx'
+import ProgressSteps from '../components/ProgressSteps.jsx'
+import { AC_PRICE_PER_UNIT, SERVICES } from '../data/providers.js'
 
 const PAYMENT_METHODS = [
   { id: 'apple', label: 'Apple pay' },
@@ -42,6 +44,7 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack }) {
 
   const isInspection = booking.variant === 'inspection'
   const isMaintenance = booking.variant === 'maintenance'
+  const service = SERVICES[booking.service]
 
   // What is being paid for depends on the flow:
   //  - inspection booking -> only the provider's inspection visit fee
@@ -90,13 +93,15 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack }) {
       {/* Inspection checkout (mockup 7): timing + location sections */}
       {isInspection && (
         <>
-          <p className="mt-3 flex items-center gap-3 rounded-xl bg-white p-3 text-xs text-gray-500 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-500 text-lg font-bold text-white">
-              !
-            </span>
-            Please note: a prior inspection of your issue is necessary before proceeding, ensuring a
-            seamless and efficient experience with our services.
-          </p>
+          {service.requiresInspection && (
+            <p className="mt-3 flex items-center gap-3 rounded-xl bg-white p-3 text-xs text-gray-500 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-500 text-lg font-bold text-white">
+                !
+              </span>
+              Please note: a prior inspection of your issue is necessary before proceeding, ensuring
+              a seamless and efficient experience with our services.
+            </p>
+          )}
           <h2 className="mt-4 text-lg font-semibold text-black">Timing</h2>
           <div className="mt-1 flex items-center justify-between rounded-xl bg-white p-3 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
             <div>
@@ -130,39 +135,13 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack }) {
       )}
 
       {/* Provider / appointment card */}
-      <div className="mt-5 rounded-xl bg-white p-3 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
-        <div className="flex items-start gap-2">
-          <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
-            style={{ background: booking.provider.color }}
-          >
-            {booking.provider.name[0].toUpperCase()}
-          </div>
-          <div className="grow">
-            <p className="font-semibold text-black">{booking.provider.name}</p>
-            <p className="text-sm text-black">
-              {booking.date.day} {booking.date.num}, {booking.time}
-            </p>
-            <p className="text-xs text-[#8442FF]">
-              {isInspection
-                ? `${booking.service === 'plumber' ? 'Plumber' : 'AC'} inspection`
-                : booking.service === 'plumber'
-                  ? 'Plumbing maintenance'
-                  : 'AC cleaning & refilling'}
-            </p>
-          </div>
-          <p className="text-black">{total} AED</p>
-        </div>
-        <div className="mt-1 pl-12 text-sm text-gray-400">
-          <p>Ahmed Alshamsi</p>
-          <p>0501234567</p>
-          <div className="flex items-end justify-between">
-            <p>9 Yaw Hayah St-Ni&quot;mah-Abu Dhabi</p>
-            <button type="button" className="cursor-pointer text-[15px] text-[#8442FF]">
-              Change
-            </button>
-          </div>
-        </div>
+      <div className="mt-5">
+        <AppointmentCard
+          booking={booking}
+          label={isInspection ? service.inspectionLabel : service.maintenanceLabel}
+          price={total}
+          onChange={() => {}}
+        />
       </div>
 
       {isInspection && (
@@ -173,22 +152,8 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack }) {
 
       {/* Progress (maintenance flow): inspection done -> pay */}
       {isMaintenance && (
-        <div className="mt-6 flex items-center px-2">
-          <div className="flex flex-col items-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#8442FF]">
-              <svg width="20" height="15" viewBox="0 0 24 18" fill="none">
-                <path d="m2 9 7 7L22 2" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-            <p className="mt-1 text-sm text-black">Inspection</p>
-          </div>
-          <div className="mx-1 mb-5 h-1 grow rounded bg-gradient-to-r from-[#8442FF] to-gray-300" />
-          <div className="flex flex-col items-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-gray-300 bg-white text-lg text-gray-400">
-              2
-            </div>
-            <p className="mt-1 text-sm text-black">Pay</p>
-          </div>
+        <div className="mt-6">
+          <ProgressSteps secondLabel="Pay" secondActive />
         </div>
       )}
 

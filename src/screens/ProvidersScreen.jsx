@@ -3,27 +3,29 @@ import GradientHeader from '../components/GradientHeader.jsx'
 import ProviderCard from '../components/ProviderCard.jsx'
 import Stepper from '../components/Stepper.jsx'
 import DateTimeSheet from '../components/DateTimeSheet.jsx'
-import { PROVIDERS, PLUMBER_PROVIDERS, PREVIOUS_PROVIDERS } from '../data/providers.js'
+import { SERVICES } from '../data/providers.js'
 
-// Provider lists for both services:
-//  - AC "booking":     title "Providers", search bar, price = booking fee   (screen 11)
-//  - AC "inspection":  title "Inspection options", stepper                  (screen 5)
-//  - plumber:          notice + stepper + per-hour rates + previous providers (plumber 5)
-export default function ProvidersScreen({ service = 'ac', variant, onConfirm, onBack }) {
-  const isPlumber = service === 'plumber'
+// One provider list for every service and both variants, driven by the
+// SERVICES config:
+//  - booking:    search bar, booking fees                        (AC screen 11)
+//  - inspection: stepper, inspection fees                        (AC screen 5)
+//    + "inspection first" notice and previous providers if the
+//      service config has them                                   (plumber screen 5)
+export default function ProvidersScreen({ service: serviceId, variant, onConfirm, onBack }) {
+  const service = SERVICES[serviceId]
   const isInspection = variant === 'inspection'
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState(null) // provider whose date/time sheet is open
 
-  const all = isPlumber ? PLUMBER_PROVIDERS : PROVIDERS
-  const providers = all.filter((p) => p.name.toLowerCase().includes(query.toLowerCase()))
-
-  const title = isPlumber ? 'Plumber' : isInspection ? 'Inspection options' : 'Providers'
+  const providers = service.providers.filter((p) =>
+    p.name.toLowerCase().includes(query.toLowerCase()),
+  )
+  const title = service.listTitle[variant] ?? service.label
 
   return (
     <div className="relative">
       <GradientHeader title={title} onBack={onBack} sheetClassName="bg-[#F5F4F7]">
-        {isPlumber && (
+        {isInspection && service.requiresInspection && (
           <p className="mx-4 flex items-center gap-3 text-xs text-gray-500">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-500 text-lg font-bold text-white">
               !
@@ -33,7 +35,7 @@ export default function ProvidersScreen({ service = 'ac', variant, onConfirm, on
           </p>
         )}
 
-        {isInspection || isPlumber ? (
+        {isInspection ? (
           <Stepper />
         ) : (
           <div className="mx-4 mt-4 flex h-12 items-center gap-3 rounded-2xl bg-white px-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
@@ -45,34 +47,32 @@ export default function ProvidersScreen({ service = 'ac', variant, onConfirm, on
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Breezcool"
+              placeholder={service.providers[0]?.name}
               className="w-full bg-transparent text-[15px] text-black outline-none placeholder:text-[#C2C0C9]"
             />
           </div>
         )}
 
-        {(isInspection || isPlumber) && (
-          <h2 className="px-4 pt-4 text-lg font-semibold text-black">Providers</h2>
-        )}
+        {isInspection && <h2 className="px-4 pt-4 text-lg font-semibold text-black">Providers</h2>}
 
         <div className="flex flex-col gap-3 px-3 pt-4 pb-4">
           {providers.map((p, i) => (
             <ProviderCard
               key={`${p.id}-${i}`}
               provider={p}
-              price={isInspection || isPlumber ? p.inspectionFee : p.bookingFee}
+              price={isInspection ? p.inspectionFee : p.bookingFee}
               priceSuffix={p.perHour ? ' AED/Hr' : ' AED'}
-              buttonLabel={isPlumber ? 'Book' : isInspection ? 'Book inspection' : 'Book'}
+              buttonLabel={isInspection && !service.requiresInspection ? 'Book inspection' : 'Book'}
               onBook={() => setSelected(p)}
             />
           ))}
         </div>
 
-        {isPlumber && (
+        {service.previousProviders && (
           <>
             <h2 className="px-4 pt-2 text-lg font-semibold text-black">Previous Providers</h2>
             <div className="no-scrollbar flex gap-3 overflow-x-auto px-3 pt-3 pb-8">
-              {PREVIOUS_PROVIDERS.map((p) => (
+              {service.previousProviders.map((p) => (
                 <div
                   key={p.id}
                   className="flex h-28 w-28 shrink-0 items-center justify-center rounded-2xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
@@ -93,13 +93,7 @@ export default function ProvidersScreen({ service = 'ac', variant, onConfirm, on
       {selected && (
         <DateTimeSheet
           provider={selected}
-          title={
-            isPlumber
-              ? 'Inspection time & date'
-              : isInspection
-                ? 'Inspection time & date'
-                : 'AC Refilling & Cleaning'
-          }
+          title={isInspection ? 'Inspection time & date' : service.bookingSheetTitle}
           onClose={() => setSelected(null)}
           onConfirm={({ date, time }) => onConfirm(selected, date, time)}
         />

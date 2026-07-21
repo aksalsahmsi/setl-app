@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 import GradientButton from '../components/GradientButton.jsx'
 import ProductCard from '../components/ProductCard.jsx'
+import AppointmentCard from '../components/AppointmentCard.jsx'
+import ProgressSteps from '../components/ProgressSteps.jsx'
 import { getInspectionProducts } from '../data/providers.js'
 
-// Tracking screen after an inspection is booked (mockup 8/9a).
-// While the inspection is in progress the products area shows gray skeleton
-// boxes; when the inspector finishes, the proposed products appear with
-// their prices and the fair market range. The customer accepts (Next) or
-// rejects with a reason.
+// Tracking screen after an inspection is booked (mockup 8/9a) — shared by
+// every service. While the inspection is in progress the products area shows
+// gray skeleton boxes; when the inspector finishes, the proposed products
+// appear with their prices and the fair market range. The customer accepts
+// (Next) or rejects with a reason.
 export default function OrderTrackingScreen({ booking, counts, onProceedToPay, onReject, onBack }) {
   const [products, setProducts] = useState(null)
 
@@ -38,52 +40,12 @@ export default function OrderTrackingScreen({ booking, counts, onProceedToPay, o
         <h1 className="text-center text-2xl font-semibold text-black">Order Details</h1>
       </div>
 
-      {/* Appointment card */}
-      <div className="mt-5 rounded-xl bg-white p-3 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
-        <div className="flex items-start gap-2">
-          <div
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
-            style={{ background: booking.provider.color }}
-          >
-            {booking.provider.name[0].toUpperCase()}
-          </div>
-          <div className="grow">
-            <p className="font-semibold text-black">{booking.provider.name}</p>
-            <p className="text-sm text-black">
-              {booking.date.day} {booking.date.num}, {booking.time}
-            </p>
-            <p className="text-xs text-[#8442FF]">Inspection visit — paid</p>
-          </div>
-          <p className="text-black">{booking.price} AED</p>
-        </div>
-        <div className="mt-1 pl-12 text-sm text-gray-400">
-          <p>Ahmed Alshamsi</p>
-          <p>0501234567</p>
-          <p>9 Yaw Hayah St-Ni&quot;mah-Abu Dhabi</p>
-        </div>
+      <div className="mt-5">
+        <AppointmentCard booking={booking} label="Inspection visit — paid" price={booking.price} />
       </div>
 
-      {/* Progress: inspection done -> products */}
-      <div className="mt-6 flex items-center px-2">
-        <div className="flex flex-col items-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#8442FF]">
-            <svg width="20" height="15" viewBox="0 0 24 18" fill="none">
-              <path d="m2 9 7 7L22 2" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <p className="mt-1 text-sm text-black">Inspection</p>
-        </div>
-        <div className="mx-1 mb-5 h-1 grow rounded bg-gradient-to-r from-[#8442FF] to-gray-300" />
-        <div className="flex flex-col items-center">
-          <div
-            className={`flex h-12 w-12 items-center justify-center rounded-full text-lg ${
-              products ? 'bg-[#B15CF3] text-white' : 'border-2 border-gray-300 bg-white text-gray-400'
-            }`}
-          >
-            2
-          </div>
-          <p className="mt-1 text-sm text-black">Products</p>
-        </div>
+      <div className="mt-6">
+        <ProgressSteps secondLabel="Products" secondActive={!!products} />
       </div>
 
       {!products ? (

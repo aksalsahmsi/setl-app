@@ -54,6 +54,31 @@ export function getInspectionProducts(service, counts) {
 
 export const REJECT_REASONS = ['Poor quality', 'High price', 'I have my own products', 'Something else']
 
+// Everything service-specific in one place. Adding a new service to the
+// customer app = adding an entry here (plus its screen for choosing options,
+// if it needs one).
+export const SERVICES = {
+  ac: {
+    label: 'AC cleaning & refilling',
+    inspectionLabel: 'AC inspection',
+    maintenanceLabel: 'AC cleaning & refilling',
+    providers: PROVIDERS,
+    // AC can be booked directly, so no "inspection first" notice
+    requiresInspection: false,
+    bookingSheetTitle: 'AC Refilling & Cleaning',
+    listTitle: { booking: 'Providers', inspection: 'Inspection options' },
+  },
+  plumber: {
+    label: 'Plumber',
+    inspectionLabel: 'Plumber inspection',
+    maintenanceLabel: 'Plumbing maintenance',
+    providers: PLUMBER_PROVIDERS,
+    requiresInspection: true,
+    previousProviders: PREVIOUS_PROVIDERS,
+    listTitle: { inspection: 'Plumber' },
+  },
+}
+
 // Provider-app onboarding data
 export const PROVIDER_SERVICES = [
   'Part time cleaners',
