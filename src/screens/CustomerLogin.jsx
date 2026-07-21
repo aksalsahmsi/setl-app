@@ -69,7 +69,7 @@ export default function CustomerLogin({ onContinue, asProvider = false, onSwitch
               setError('')
             }}
             maxLength={9}
-            className="font-inter w-full bg-transparent text-[15px] text-black outline-none placeholder:text-[#817777]/70"
+            className="font-inter w-full bg-transparent text-base text-black outline-none placeholder:text-[#817777]/70"
           />
         </div>
         {error && <p className="mt-2 text-xs text-red-500">{error}</p>}

@@ -32,7 +32,7 @@ export default function CoverageScreen({ onConfirm, onBack }) {
           <input
             type="search"
             placeholder="Search Location"
-            className="w-full bg-transparent text-sm text-black outline-none placeholder:text-[#B9B7BF]"
+            className="w-full bg-transparent text-base text-black outline-none placeholder:text-[#B9B7BF]"
           />
         </div>
       </div>

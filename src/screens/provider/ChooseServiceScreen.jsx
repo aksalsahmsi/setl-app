@@ -40,7 +40,7 @@ export default function ChooseServiceScreen({ onConfirm, onBack }) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search Service"
-              className="w-full bg-transparent text-sm text-black outline-none placeholder:text-[#B9B7BF]"
+              className="w-full bg-transparent text-base text-black outline-none placeholder:text-[#B9B7BF]"
             />
           </div>
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#8442FF]">

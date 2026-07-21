@@ -21,7 +21,7 @@ export default function LocationScreen({ onConfirm }) {
           <input
             type="search"
             placeholder="Search Location"
-            className="w-full bg-transparent text-[15px] text-black outline-none placeholder:text-[#B9B7BF]"
+            className="w-full bg-transparent text-base text-black outline-none placeholder:text-[#B9B7BF]"
           />
         </div>
         <div className="absolute top-20 left-4 flex overflow-hidden rounded-lg bg-white text-sm shadow">
@@ -61,7 +61,7 @@ export default function LocationScreen({ onConfirm }) {
           value={nameNumber}
           onChange={(e) => setNameNumber(e.target.value)}
           placeholder="Name /  .Number"
-          className="mt-4 rounded-xl bg-[#F3F2F5] px-4 py-3.5 text-[15px] text-black outline-none placeholder:text-[#B9B7BF]"
+          className="mt-4 rounded-xl bg-[#F3F2F5] px-4 py-3.5 text-base text-black outline-none placeholder:text-[#B9B7BF]"
         />
 
         <div className="grow" />

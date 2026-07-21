@@ -156,10 +156,10 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack, onR
         </p>
       )}
 
-      {/* Progress (maintenance flow): inspection done -> pay */}
+      {/* Progress (maintenance flow): products accepted, paying now */}
       {isMaintenance && (
         <div className="mt-6">
-          <ProgressSteps secondLabel="Pay" secondActive />
+          <ProgressSteps current="Pay" />
         </div>
       )}
 
@@ -191,7 +191,7 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack, onR
             setVoucherState(null)
           }}
           placeholder="Voucher code"
-          className="w-full bg-transparent px-3 text-sm text-black outline-none placeholder:text-gray-400"
+          className="w-full bg-transparent px-3 text-base text-black outline-none placeholder:text-gray-400"
         />
         <button
           type="button"

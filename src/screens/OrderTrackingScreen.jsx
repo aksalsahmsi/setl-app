@@ -45,7 +45,7 @@ export default function OrderTrackingScreen({ booking, counts, onProceedToPay, o
       </div>
 
       <div className="mt-6">
-        <ProgressSteps secondLabel="Products" secondActive={!!products} />
+        <ProgressSteps current="Products" />
       </div>
 
       {!products ? (

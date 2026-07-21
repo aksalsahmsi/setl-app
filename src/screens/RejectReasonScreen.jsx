@@ -54,7 +54,7 @@ export default function RejectReasonScreen({ onSubmit, onBack }) {
             onChange={(e) => setNote(e.target.value)}
             placeholder="Tell us what went wrong (optional)"
             rows={3}
-            className="screen-enter mt-2 w-full resize-none rounded-xl bg-[#F3F2F5] p-3 text-sm text-black outline-none placeholder:text-gray-400"
+            className="screen-enter mt-2 w-full resize-none rounded-xl bg-[#F3F2F5] p-3 text-base text-black outline-none placeholder:text-gray-400"
           />
         )}
       </div>
