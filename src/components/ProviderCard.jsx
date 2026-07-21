@@ -21,6 +21,20 @@ export default function ProviderCard({ provider, price, priceSuffix = ' AED', bu
           {price}
           {priceSuffix}
         </p>
+        {provider.slots && (
+          <div className="mt-1.5 flex flex-wrap gap-1">
+            {provider.slots.map((slot, i) => (
+              <span
+                key={slot}
+                className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                  i === 0 ? 'bg-[#EDE4FD] text-[#8442FF]' : 'border border-gray-200 text-gray-400'
+                }`}
+              >
+                {slot}
+              </span>
+            ))}
+          </div>
+        )}
         <button
           type="button"
           onClick={onBook}

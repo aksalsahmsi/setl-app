@@ -1,8 +1,10 @@
 import GradientButton from '../components/GradientButton.jsx'
+import { orderAction } from '../data/orders.js'
 
 const STATUS_STYLES = {
   'In progress': 'bg-[#EDE4FD] text-[#8442FF]',
   Scheduled: 'bg-blue-50 text-blue-600',
+  'Awaiting payment': 'bg-orange-50 text-orange-500',
   Completed: 'bg-green-50 text-green-600',
   Rejected: 'bg-red-50 text-red-500',
 }
@@ -27,12 +29,19 @@ export default function OrdersScreen({ orders, onOpenOrder, onBook }) {
       ) : (
         <div className="mt-5 flex flex-col gap-3">
           {orders.map((order) => {
-            const openable = order.status === 'In progress'
+            const action = orderAction(order) // 'pay' | 'track' | null
+            const openable = action !== null
+            // Money shown: what was paid once settled, what's due (or the
+            // expected cost) before that
+            const amount =
+              order.state === 'paid' || order.state === 'closed'
+                ? order.total
+                : (order.amountDue ?? order.total)
             return (
               <button
                 key={order.id}
                 type="button"
-                onClick={openable ? () => onOpenOrder(order) : undefined}
+                onClick={openable ? () => onOpenOrder(order, action) : undefined}
                 className={`flex items-center gap-3 rounded-xl bg-white p-3 text-left shadow-[0_2px_8px_rgba(0,0,0,0.06)] ${openable ? 'cursor-pointer' : 'cursor-default'}`}
               >
                 <div
@@ -53,7 +62,10 @@ export default function OrdersScreen({ orders, onOpenOrder, onBook }) {
                   </span>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1">
-                  <span className="text-sm font-semibold text-black">{order.total} AED</span>
+                  <span className="text-sm font-semibold text-black">{amount} AED</span>
+                  {action === 'pay' && (
+                    <span className="text-[11px] font-medium text-[#8442FF]">Pay now</span>
+                  )}
                   {openable && (
                     <svg width="8" height="14" viewBox="0 0 10 18" fill="none">
                       <path d="m1 1 7 8-7 8" stroke="#9C9AA5" strokeWidth="2" strokeLinecap="round" />

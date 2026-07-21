@@ -40,9 +40,9 @@ export const TRANSITIONS = {
 
 export const ORDER_STATES = Object.keys(TRANSITIONS)
 
-// What the customer sees on the Orders screen today. Every state maps onto
-// the four existing badges; Phase 4 gives lifecycle/exception states their
-// own labels ("On the way", "Awaiting payment", ...).
+// What the customer sees on the Orders screen. Awaiting payment got its own
+// badge in Phase 1 (pay-after-completion); Phase 4 gives the remaining
+// lifecycle/exception states their own labels ("On the way", ...).
 const IN_PROGRESS_STATES = [
   'provider_en_route',
   'in_progress',
@@ -50,8 +50,6 @@ const IN_PROGRESS_STATES = [
   'approved',
   'work_in_progress',
   'work_done',
-  'awaiting_payment',
-  'payment_failed',
   'disputed',
 ]
 
@@ -60,30 +58,40 @@ export function statusLabel(state, flowType) {
   // visit + estimate are in flight); a direct booking is just "Scheduled".
   if (state === 'scheduled' || state === 'draft')
     return flowType === 'inspection' ? 'In progress' : 'Scheduled'
+  if (state === 'awaiting_payment' || state === 'payment_failed') return 'Awaiting payment'
   if (IN_PROGRESS_STATES.includes(state)) return 'In progress'
   if (state === 'paid' || state === 'closed') return 'Completed'
   if (state === 'estimate_declined' || state === 'estimate_expired') return 'Rejected'
   return 'Cancelled' // cancellations + no-shows, unreachable from the UI today
 }
 
+// What tapping the order in the list does: pay the final invoice, follow the
+// inspection/estimate, or nothing (chevron hidden).
+export function orderAction(order) {
+  if (order.state === 'awaiting_payment' || order.state === 'payment_failed') return 'pay'
+  if (
+    order.flowType === 'inspection' &&
+    ['scheduled', 'provider_en_route', 'in_progress', 'estimate_ready'].includes(order.state)
+  )
+    return 'track'
+  return null
+}
+
 let nextOrderId = 1
 
 // flowType: 'inspection' (visit -> estimate -> approval) | 'direct' (booked work).
 // `service` is the label shown in lists; `serviceKey` indexes SERVICES config.
-export function createOrder({ serviceKey, service, flowType, provider, date, time, total, meta }) {
+// Money fields: `total` = paid so far, `amountDue` = final-invoice amount
+// (with `items` / `discount` / `inspectionCredit` as its breakdown).
+// `meta` lands on the first history entry; other fields are stored verbatim.
+export function createOrder({ meta, ...fields }) {
   const order = {
     id: nextOrderId++,
-    serviceKey,
-    service,
-    flowType,
-    provider,
-    date,
-    time,
-    total,
+    ...fields,
     state: 'scheduled',
     history: [{ state: 'scheduled', at: Date.now(), ...(meta && { meta }) }],
   }
-  return { ...order, status: statusLabel(order.state, flowType) }
+  return { ...order, status: statusLabel(order.state, order.flowType) }
 }
 
 export function canTransition(order, toState) {

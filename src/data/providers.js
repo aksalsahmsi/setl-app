@@ -1,11 +1,13 @@
 // Provider data shown in the lists. Colors are used for the logo avatar circles.
 // AC providers charge per visit; plumbers charge per hour (perHour: true).
+// slots = next free slot + 2 quick alternatives, shown as availability chips
+// (hardcoded until providers come from the backend).
 export const PROVIDERS = [
-  { id: 1, name: 'Breezcool', inspectionFee: 50, bookingFee: 76, rating: 4.7, color: '#1D7FC4' },
-  { id: 2, name: 'Al Imran Technical Sevices', inspectionFee: 20, bookingFee: 50, rating: 4.9, color: '#C43B1D' },
-  { id: 3, name: 'pacventac', inspectionFee: 40, bookingFee: 60, rating: 4.7, color: '#5A5A5A' },
-  { id: 4, name: 'pacventac', inspectionFee: 40, bookingFee: 45, rating: 4.7, color: '#E0442B' },
-  { id: 5, name: 'pacventac', inspectionFee: 40, bookingFee: 76, rating: 4.7, color: '#0FA3A3' },
+  { id: 1, name: 'Breezcool', inspectionFee: 50, bookingFee: 76, rating: 4.7, color: '#1D7FC4', slots: ['Today 4:00pm', 'Today 6:30pm', 'Tomorrow 9:00am'] },
+  { id: 2, name: 'Al Imran Technical Sevices', inspectionFee: 20, bookingFee: 50, rating: 4.9, color: '#C43B1D', slots: ['Today 2:15pm', 'Tomorrow 10:00am', 'Tomorrow 4:30pm'] },
+  { id: 3, name: 'pacventac', inspectionFee: 40, bookingFee: 60, rating: 4.7, color: '#5A5A5A', slots: ['Tomorrow 9:00am', 'Tomorrow 11:30am', 'Tomorrow 2:00pm'] },
+  { id: 4, name: 'pacventac', inspectionFee: 40, bookingFee: 45, rating: 4.7, color: '#E0442B', slots: ['Today 5:45pm', 'Tomorrow 1:00pm', 'Tomorrow 6:15pm'] },
+  { id: 5, name: 'pacventac', inspectionFee: 40, bookingFee: 76, rating: 4.7, color: '#0FA3A3', slots: ['Tomorrow 8:30am', 'Tomorrow 3:00pm', 'Tomorrow 7:45pm'] },
 ]
 
 // Next 5 days from the real calendar: Today, Tomorrow, then weekday names.
@@ -24,9 +26,9 @@ export const TIMES = ['12:00pm', '12:15pm', '12:30pm', '12:45pm', '1:00pm', '1:1
 export const AC_PRICE_PER_UNIT = 40
 
 export const PLUMBER_PROVIDERS = [
-  { id: 'pl1', name: 'We will fix it', inspectionFee: 20, bookingFee: 20, rating: 4.9, color: '#D9B80E', perHour: true },
-  { id: 'pl2', name: 'UltraTec Water Treatment LLC', inspectionFee: 30, bookingFee: 30, rating: 4.2, color: '#2E9E4F', perHour: true },
-  { id: 'pl3', name: 'Nu Flow', inspectionFee: 18, bookingFee: 18, rating: 4.7, color: '#1D3F8F', perHour: true },
+  { id: 'pl1', name: 'We will fix it', inspectionFee: 20, bookingFee: 20, rating: 4.9, color: '#D9B80E', perHour: true, slots: ['Today 3:30pm', 'Today 7:00pm', 'Tomorrow 11:00am'] },
+  { id: 'pl2', name: 'UltraTec Water Treatment LLC', inspectionFee: 30, bookingFee: 30, rating: 4.2, color: '#2E9E4F', perHour: true, slots: ['Tomorrow 9:15am', 'Tomorrow 2:45pm', 'Tomorrow 5:30pm'] },
+  { id: 'pl3', name: 'Nu Flow', inspectionFee: 18, bookingFee: 18, rating: 4.7, color: '#1D3F8F', perHour: true, slots: ['Today 1:45pm', 'Tomorrow 10:30am', 'Tomorrow 4:00pm'] },
 ]
 
 export const PREVIOUS_PROVIDERS = [

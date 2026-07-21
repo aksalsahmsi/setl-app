@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import CustomerLogin from './screens/CustomerLogin.jsx'
 import OtpScreen from './screens/OtpScreen.jsx'
 import LocationScreen from './screens/LocationScreen.jsx'
@@ -7,6 +7,7 @@ import AcServiceScreen from './screens/AcServiceScreen.jsx'
 import ProvidersScreen from './screens/ProvidersScreen.jsx'
 import OrderDetailsScreen from './screens/OrderDetailsScreen.jsx'
 import OrderTrackingScreen from './screens/OrderTrackingScreen.jsx'
+import InvoiceScreen from './screens/InvoiceScreen.jsx'
 import RejectReasonScreen from './screens/RejectReasonScreen.jsx'
 import SuccessScreen from './screens/SuccessScreen.jsx'
 import OrdersScreen from './screens/OrdersScreen.jsx'
@@ -21,9 +22,11 @@ import { advance, createOrder, transition } from './data/orders.js'
 
 const TAB_SCREENS = ['home', 'orders', 'profile']
 
-// Customer flow:
-//   login -> otp -> location -> home -> service -> providers -> checkout -> success
-//   Inspection: success -> tracking (products arrive) -> accept (checkout) / reject (reason)
+// Customer flow (pay after completion — decision B):
+//   login -> otp -> location -> home -> service -> providers -> confirm (0 due) -> success
+//   ... work done (simulated) -> Orders "Awaiting payment" -> final invoice -> paid
+//   Inspection: fee prepaid at checkout -> tracking (estimate arrives) ->
+//   approve (confirm repair, 0 due) / reject (reason) -> same invoice path
 // Provider flow (onboarding):
 //   login -> otp -> chooseService -> coverage -> timeSlots -> done
 function App() {
@@ -34,7 +37,37 @@ function App() {
   const [flow, setFlow] = useState({ service: 'ac', variant: 'booking' }) // which provider list is open
   const [booking, setBooking] = useState(null) // { provider, date, time, variant, service, ... }
   const [orders, setOrders] = useState([])
+  const [successInfo, setSuccessInfo] = useState(null) // { variant, total, credit } for SuccessScreen
+  const [payingOrderId, setPayingOrderId] = useState(null) // order open on the invoice screen
   const [providerProfile, setProviderProfile] = useState({ services: [], range: 15, slots: null })
+  const workTimers = useRef(new Set()) // order ids with a work-completion sim scheduled
+
+  // Simulated work completion (Phase 1): a while after a direct booking is
+  // confirmed (or a repair approved), the provider "finishes" and the order
+  // lands in awaiting_payment — paid from the Orders tab. Later this comes
+  // from the backend / provider app.
+  useEffect(() => {
+    orders.forEach((ord) => {
+      const path =
+        ord.flowType === 'direct' && ord.state === 'scheduled'
+          ? ['provider_en_route', 'in_progress', 'work_done', 'awaiting_payment']
+          : ord.state === 'approved'
+            ? ['work_in_progress', 'work_done', 'awaiting_payment']
+            : null
+      if (path && !workTimers.current.has(ord.id)) {
+        workTimers.current.add(ord.id)
+        setTimeout(() => {
+          setOrders((o) =>
+            o.map((x) =>
+              x.id === ord.id && (x.state === 'scheduled' || x.state === 'approved')
+                ? advance(x, path)
+                : x,
+            ),
+          )
+        }, 8000)
+      }
+    })
+  }, [orders])
 
   function openProviders(service, variant) {
     setFlow({ service, variant })
@@ -49,13 +82,18 @@ function App() {
         time,
         variant,
         service,
-        price: variant === 'inspection' ? provider.inspectionFee : provider.bookingFee,
+        // Inspection pricing is Setl's, standardized per service (decision B)
+        price:
+          variant === 'inspection' ? SERVICES[service].standardInspectionFee : provider.bookingFee,
       })
       setScreen('orderDetails')
     }
   }
 
-  function handlePaid(total) {
+  // Checkout finished. Only the inspection variant moves money here; the
+  // other two just confirm the booking (AED 0 due now — decision B) and the
+  // work-completion sim takes the order to awaiting_payment.
+  function handleCheckout(total, { items, discount, inspectionCredit }) {
     const service = SERVICES[booking.service]
     if (booking.variant === 'inspection') {
       const order = createOrder({
@@ -65,25 +103,29 @@ function App() {
         provider: booking.provider,
         date: booking.date,
         time: booking.time,
-        total,
+        total, // fee prepaid here
+        items,
       })
       setOrders((o) => [...o, order])
       setBooking({ ...booking, total, orderId: order.id })
+      setSuccessInfo({ variant: 'inspection', total })
     } else if (booking.variant === 'maintenance') {
-      // Approve + pay in one tap for now (pay-after-completion is Phase 1);
-      // the history still records the full approved -> paid path.
       setOrders((o) =>
         o.map((ord) =>
           ord.id === booking.orderId
             ? {
-                ...advance(ord, ['approved', 'work_in_progress', 'work_done', 'awaiting_payment', 'paid'], { amount: total }),
+                ...transition(ord, 'approved', { items, amountDue: total }),
                 service: service.maintenanceLabel,
-                total: ord.total + total,
+                items,
+                discount,
+                inspectionCredit,
+                amountDue: total,
               }
             : ord,
         ),
       )
-      setBooking({ ...booking, total })
+      setBooking(null)
+      setSuccessInfo({ variant: 'maintenance', credit: inspectionCredit })
     } else {
       const order = createOrder({
         serviceKey: booking.service,
@@ -92,12 +134,30 @@ function App() {
         provider: booking.provider,
         date: booking.date,
         time: booking.time,
-        total,
-        meta: { paidUpfront: true }, // pre-Phase-1 behavior, noted in history
+        total: 0, // nothing paid yet
+        items,
+        discount,
+        amountDue: total,
+        meta: { payAfterCompletion: true },
       })
       setOrders((o) => [...o, order])
-      setBooking({ ...booking, total })
+      setBooking(null)
+      setSuccessInfo({ variant: 'booking' })
     }
+    setScreen('success')
+  }
+
+  // Final invoice settled from the Orders tab.
+  function handleInvoicePaid(amount, meta) {
+    setOrders((o) =>
+      o.map((ord) =>
+        ord.id === payingOrderId
+          ? { ...transition(ord, 'paid', { amount, ...meta }), total: ord.total + amount }
+          : ord,
+      ),
+    )
+    setPayingOrderId(null)
+    setSuccessInfo({ variant: 'paid', total: amount })
     setScreen('success')
   }
 
@@ -130,6 +190,9 @@ function App() {
     setCounts({ refill: 1, clean: 1 })
     setBooking(null)
     setOrders([])
+    setSuccessInfo(null)
+    setPayingOrderId(null)
+    workTimers.current = new Set()
     setProviderProfile({ services: [], range: 15, slots: null })
   }
 
@@ -158,7 +221,14 @@ function App() {
     orders: (
       <OrdersScreen
         orders={orders}
-        onOpenOrder={() => setScreen('tracking')}
+        onOpenOrder={(order, action) => {
+          if (action === 'pay') {
+            setPayingOrderId(order.id)
+            setScreen('invoice')
+          } else {
+            setScreen('tracking')
+          }
+        }}
         onBook={() => setScreen('home')}
       />
     ),
@@ -189,7 +259,17 @@ function App() {
         }
         onReschedule={(date, time) => setBooking({ ...booking, date, time })}
         onChangeProvider={() => setScreen('providers')}
-        onPay={handlePaid}
+        onPay={handleCheckout}
+      />
+    ),
+    invoice: payingOrderId && (
+      <InvoiceScreen
+        order={orders.find((o) => o.id === payingOrderId)}
+        onPay={handleInvoicePaid}
+        onBack={() => {
+          setPayingOrderId(null)
+          setScreen('orders')
+        }}
       />
     ),
     tracking: (
@@ -208,8 +288,7 @@ function App() {
     rejectReason: <RejectReasonScreen onSubmit={handleRejected} onBack={() => setScreen('tracking')} />,
     success: (
       <SuccessScreen
-        total={booking?.total}
-        variant={booking?.variant}
+        {...(successInfo ?? {})}
         onDone={() => setScreen('home')}
         onTrack={() => setScreen('tracking')}
       />

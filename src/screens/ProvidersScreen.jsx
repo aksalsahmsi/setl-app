@@ -62,7 +62,7 @@ export default function ProvidersScreen({ service: serviceId, variant, onConfirm
             <ProviderCard
               key={`${p.id}-${i}`}
               provider={p}
-              price={isInspection ? p.inspectionFee : p.bookingFee}
+              price={isInspection ? service.standardInspectionFee : p.bookingFee}
               priceSuffix={p.perHour ? ' AED/Hr' : ' AED'}
               buttonLabel={isInspection && !service.requiresInspection ? 'Book inspection' : 'Book'}
               onBook={() => setSelected(p)}
