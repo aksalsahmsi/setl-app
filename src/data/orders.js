@@ -119,16 +119,22 @@ export function advance(order, states, meta) {
   return states.reduce((ord, state, i) => transition(ord, state, i === states.length - 1 ? meta : undefined), order)
 }
 
+// Events are things that happen to an order without changing its state
+// (a question to the inspector, a second-quote request, a reschedule).
+// They land in the same history, tagged with the current state.
+export function recordEvent(order, event, meta) {
+  return {
+    ...order,
+    history: [...order.history, { state: order.state, at: Date.now(), meta: { event, ...meta } }],
+  }
+}
+
 // Rescheduling is an event, not a state: the order stays 'scheduled' with
 // new date/time, and the move is recorded in history.
 export function reschedule(order, date, time) {
   return {
-    ...order,
+    ...recordEvent(order, 'rescheduled', { from: { date: order.date, time: order.time } }),
     date,
     time,
-    history: [
-      ...order.history,
-      { state: order.state, at: Date.now(), meta: { event: 'rescheduled', from: { date: order.date, time: order.time } } },
-    ],
   }
 }

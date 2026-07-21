@@ -32,13 +32,33 @@ function priceVerdict(unit, lo, hi) {
 
 // Product proposed by the inspector: name, quantity, price, and a clear
 // comparison against the typical range from recent Setl jobs.
-export default function ProductCard({ product }) {
+// In "edit selected work" mode (selectable) the card shows a checkbox and
+// deselected items dim out — they drop off the estimate.
+export default function ProductCard({ product, selectable, selected, onToggle }) {
   const [lo, hi] = product.market
   const unit = product.price / product.qty
   const verdict = priceVerdict(unit, lo, hi)
 
   return (
-    <div className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+    <div
+      onClick={selectable ? onToggle : undefined}
+      className={`flex items-center gap-3 rounded-2xl bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)] ${
+        selectable ? 'cursor-pointer' : ''
+      } ${selectable && !selected ? 'opacity-45' : ''}`}
+    >
+      {selectable && (
+        <span
+          className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 ${
+            selected ? 'border-[#8442FF] bg-[#8442FF]' : 'border-gray-300 bg-white'
+          }`}
+        >
+          {selected && (
+            <svg width="12" height="10" viewBox="0 0 24 18" fill="none">
+              <path d="m2 9 7 7L22 2" stroke="#fff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </span>
+      )}
       <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-[#F6F5F8]">
         <ProductIcon icon={product.icon} />
       </div>

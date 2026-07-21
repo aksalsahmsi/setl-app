@@ -19,7 +19,8 @@ import TimeSlotsScreen from './screens/provider/TimeSlotsScreen.jsx'
 import ProviderDoneScreen from './screens/provider/ProviderDoneScreen.jsx'
 import TabBar from './components/TabBar.jsx'
 import { SERVICES } from './data/providers.js'
-import { advance, createOrder, transition } from './data/orders.js'
+import WizardScreen from './screens/WizardScreen.jsx'
+import { advance, createOrder, recordEvent, transition } from './data/orders.js'
 
 const TAB_SCREENS = ['home', 'orders', 'profile']
 
@@ -71,12 +72,13 @@ function App() {
     })
   }, [orders])
 
-  function openProviders(service, variant) {
-    setFlow({ service, variant })
+  // symptoms: what the customer picked in the wizard (travels into the order)
+  function openProviders(service, variant, symptoms) {
+    setFlow({ service, variant, symptoms })
     setScreen('providers')
   }
 
-  function confirmBooking(service, variant) {
+  function confirmBooking(service, variant, symptoms) {
     return (provider, date, time) => {
       setBooking({
         provider,
@@ -84,6 +86,7 @@ function App() {
         time,
         variant,
         service,
+        symptoms,
         hours, // used by hourly services (rate x hours at checkout)
         // Inspection pricing is Setl's, standardized per service (decision B)
         price:
@@ -108,6 +111,8 @@ function App() {
         time: booking.time,
         total, // fee prepaid here
         items,
+        // What the customer reported in the wizard, for the inspector
+        meta: booking.symptoms?.length ? { symptoms: booking.symptoms } : undefined,
       })
       setOrders((o) => [...o, order])
       setBooking({ ...booking, total, orderId: order.id })
@@ -246,6 +251,18 @@ function App() {
         onBack={() => setScreen('home')}
       />
     ),
+    wizard: (
+      <WizardScreen
+        onBack={() => setScreen('home')}
+        onRoute={(service, knowsService, symptoms) => {
+          // "Yes, I know the service" goes to the service's options screen
+          // when it has one; services that require an inspection (plumber)
+          // and every "not sure" answer go straight to inspection providers.
+          if (knowsService && service === 'ac') setScreen('acService')
+          else openProviders(service, 'inspection', symptoms)
+        }}
+      />
+    ),
     cleaningService: (
       <CleaningServiceScreen
         hours={hours}
@@ -258,7 +275,7 @@ function App() {
       <ProvidersScreen
         service={flow.service}
         variant={flow.variant}
-        onConfirm={confirmBooking(flow.service, flow.variant)}
+        onConfirm={confirmBooking(flow.service, flow.variant, flow.symptoms)}
         onBack={() =>
           setScreen({ ac: 'acService', cleaning: 'cleaningService' }[flow.service] ?? 'home')
         }
@@ -292,6 +309,11 @@ function App() {
         counts={counts}
         onBack={() => setScreen('orders')}
         onEstimateReady={handleEstimateReady}
+        onOrderEvent={(event, meta) =>
+          setOrders((o) =>
+            o.map((ord) => (ord.id === booking.orderId ? recordEvent(ord, event, meta) : ord)),
+          )
+        }
         onProceedToPay={(products) => {
           setBooking({ ...booking, variant: 'maintenance', products })
           setScreen('orderDetails')

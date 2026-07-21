@@ -107,6 +107,23 @@ export default function HomeScreen({ onOpenService }) {
           />
         </div>
 
+        {/* Intent-first entry (decision D): for the "something's broken" user */}
+        <button
+          type="button"
+          onClick={() => onOpenService('wizard')}
+          className="mt-4 flex w-full cursor-pointer items-center justify-between rounded-2xl bg-linear-[110deg,#8442FF,#C05CF7] p-4 text-left text-white shadow-[0_4px_14px_rgba(132,66,255,0.35)] active:scale-[0.99]"
+        >
+          <span>
+            <span className="block text-lg font-semibold">Something broken?</span>
+            <span className="mt-0.5 block text-sm text-white/85">
+              Get it fixed — answer 2 quick questions
+            </span>
+          </span>
+          <svg width="10" height="18" viewBox="0 0 10 18" fill="none">
+            <path d="m1 1 8 8-8 8" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" />
+          </svg>
+        </button>
+
         {/* Promo banner */}
         <div className="mt-4 rounded-2xl bg-linear-[110deg,#9E7BD9,#6C4BB8] p-4 text-white">
           <p className="max-w-[280px] text-[16px] leading-snug">

@@ -10,8 +10,14 @@ import { getInspectionProducts } from '../data/providers.js'
 // gray skeleton boxes; when the inspector finishes, the proposed products
 // appear with their prices and the fair market range. The customer accepts
 // (Next) or rejects with a reason.
-export default function OrderTrackingScreen({ booking, counts, onProceedToPay, onReject, onBack, onEstimateReady }) {
+export default function OrderTrackingScreen({ booking, counts, onProceedToPay, onReject, onBack, onEstimateReady, onOrderEvent }) {
   const [products, setProducts] = useState(null)
+  const [editing, setEditing] = useState(false) // "Edit selected work" mode
+  const [deselected, setDeselected] = useState(() => new Set()) // dropped line items
+  const [asking, setAsking] = useState(false) // question sheet open
+  const [question, setQuestion] = useState('')
+  const [questionSent, setQuestionSent] = useState(false)
+  const [quoteRequested, setQuoteRequested] = useState(false)
 
   // Simulated for now: the inspector's product list "arrives" a few seconds
   // after the visit. Later this comes from the backend instead.
@@ -24,7 +30,15 @@ export default function OrderTrackingScreen({ booking, counts, onProceedToPay, o
     return () => clearTimeout(t)
   }, [booking.service, counts])
 
-  const total = (products ?? []).reduce((sum, p) => sum + p.price, 0)
+  const selected = (products ?? []).filter((p) => !deselected.has(p.name))
+  const total = selected.reduce((sum, p) => sum + p.price, 0)
+
+  function toggleProduct(name) {
+    const next = new Set(deselected)
+    if (next.has(name)) next.delete(name)
+    else next.add(name)
+    setDeselected(next)
+  }
 
   return (
     <div className="font-poppins flex min-h-screen flex-col bg-[#F5F4F7] px-3 pt-5 pb-6">
@@ -78,25 +92,109 @@ export default function OrderTrackingScreen({ booking, counts, onProceedToPay, o
           </p>
           <div className="screen-enter flex flex-col gap-3">
             {products.map((p) => (
-              <ProductCard key={p.name} product={p} />
+              <ProductCard
+                key={p.name}
+                product={p}
+                selectable={editing}
+                selected={!deselected.has(p.name)}
+                onToggle={() => toggleProduct(p.name)}
+              />
             ))}
           </div>
 
+          {questionSent && (
+            <p className="mt-3 rounded-xl bg-green-50 p-2.5 text-center text-xs text-green-600">
+              Question sent — the inspector will reply here.
+            </p>
+          )}
+          {quoteRequested && (
+            <p className="mt-3 rounded-xl bg-green-50 p-2.5 text-center text-xs text-green-600">
+              Request sent — we&apos;ll notify you when another quote arrives.
+            </p>
+          )}
+
           <div className="grow" />
-          <GradientButton className="mt-6" onClick={() => onProceedToPay(products)}>
-            Next
+
+          {/* Estimate actions (PLAN.md): Approve / Edit selected work /
+              Ask a question / Request another quote / Decline */}
+          <GradientButton
+            className="mt-5"
+            disabled={selected.length === 0}
+            onClick={() => onProceedToPay(selected)}
+          >
+            {deselected.size > 0 ? `Approve selected work (${total} AED)` : 'Approve'}
           </GradientButton>
           <button
             type="button"
-            onClick={() => onReject(products)}
-            className="mt-3 h-12 w-full cursor-pointer rounded-xl border border-[#8442FF] bg-white text-[16px] font-medium text-[#8442FF] transition-transform duration-100 active:scale-[0.98]"
+            onClick={() => setEditing(!editing)}
+            className="mt-3 h-12 w-full cursor-pointer rounded-xl border border-[#8442FF] bg-white text-[15px] font-medium text-[#8442FF] transition-transform duration-100 active:scale-[0.98]"
           >
-            Reject
+            {editing ? 'Done editing' : 'Edit selected work'}
           </button>
+          <div className="mt-3 flex items-center justify-center gap-2 text-[13px]">
+            <button
+              type="button"
+              onClick={() => setAsking(true)}
+              className="cursor-pointer text-[#8442FF] underline"
+            >
+              Ask a question
+            </button>
+            <span className="text-gray-300">·</span>
+            <button
+              type="button"
+              disabled={quoteRequested}
+              onClick={() => {
+                setQuoteRequested(true)
+                onOrderEvent?.('second_quote_requested')
+              }}
+              className="cursor-pointer text-[#8442FF] underline disabled:cursor-default disabled:text-gray-300 disabled:no-underline"
+            >
+              Request another quote
+            </button>
+            <span className="text-gray-300">·</span>
+            <button
+              type="button"
+              onClick={() => onReject(products)}
+              className="cursor-pointer text-red-500 underline"
+            >
+              Decline
+            </button>
+          </div>
           <p className="mt-2 text-center text-[11px] text-gray-400">
             Total {total} AED. Your {booking.price} AED inspection fee is credited toward the repair if you approve.
           </p>
         </>
+      )}
+
+      {/* Ask-a-question sheet */}
+      {asking && (
+        <div className="fixed inset-0 z-20 flex items-end bg-black/40" onClick={() => setAsking(false)}>
+          <div
+            className="w-full rounded-t-3xl bg-white p-5 pb-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-semibold text-black">Ask your inspector</h3>
+            <textarea
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              rows={3}
+              placeholder="e.g. Is the pipe replacement really necessary?"
+              className="mt-3 w-full resize-none rounded-xl border border-gray-200 p-3 text-sm text-black outline-none placeholder:text-gray-400 focus:border-[#8442FF]"
+            />
+            <GradientButton
+              className="mt-4"
+              disabled={!question.trim()}
+              onClick={() => {
+                onOrderEvent?.('question', { question: question.trim() })
+                setQuestionSent(true)
+                setQuestion('')
+                setAsking(false)
+              }}
+            >
+              Send
+            </GradientButton>
+          </div>
+        </div>
       )}
     </div>
   )
