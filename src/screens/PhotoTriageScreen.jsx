@@ -1,27 +1,41 @@
 import { useEffect, useRef, useState } from 'react'
 import GradientHeader from '../components/GradientHeader.jsx'
 import GradientButton from '../components/GradientButton.jsx'
+import DateTimeSheet from '../components/DateTimeSheet.jsx'
 import { SERVICES, getInspectionProducts } from '../data/providers.js'
 
-// Rough ballpark for the pro's remote reply: sum the low/high of the typical
-// ranges from recent Setl jobs for this service.
-function estimateRange(serviceKey) {
+// Base ballpark for the service: sum the low/high of the typical ranges from
+// recent Setl jobs. Each responding pro then quotes a little differently.
+function baseRange(serviceKey) {
   const products = getInspectionProducts(serviceKey, { refill: 1, clean: 1 })
   const lo = products.reduce((s, p) => s + (p.market?.[0] ?? 0), 0)
   const hi = products.reduce((s, p) => s + (p.market?.[1] ?? 0), 0)
   return [lo, hi]
 }
 
+// Give each responding pro a slightly different quote so the customer has a
+// real choice (deterministic per position — no randomness).
+const QUOTE_FACTORS = [1.0, 0.88, 1.14]
+
+function proQuotes(serviceKey) {
+  const [lo, hi] = baseRange(serviceKey)
+  return SERVICES[serviceKey].providers.slice(0, 3).map((p, i) => {
+    const f = QUOTE_FACTORS[i] ?? 1
+    return { provider: p, lo: Math.round(lo * f), hi: Math.round(hi * f) }
+  })
+}
+
 // Photo-first triage (inspired by Mahara, and by how people already send
-// WhatsApp photos to a handyman): instead of committing to a paid inspection
-// visit, the customer snaps a photo + describes the problem, and a pro replies
-// remotely with a ballpark and a recommendation. Lighter than an inspection;
-// the paid inspection stays available as the fallback.
-export default function PhotoTriageScreen({ serviceKey, onBookService, onBookInspection, onBack }) {
+// WhatsApp photos to a handyman): instead of committing to a paid inspection,
+// the customer snaps a photo + describes the problem; it goes to several pros
+// in that field, and the customer picks whichever reply they like — or falls
+// back to a paid inspection.
+export default function PhotoTriageScreen({ serviceKey, onChoosePro, onBookInspection, onBack }) {
   const service = SERVICES[serviceKey]
   const [photos, setPhotos] = useState([]) // { url, name }
   const [note, setNote] = useState('')
   const [status, setStatus] = useState('compose') // compose | sending | replied
+  const [chosen, setChosen] = useState(null) // pro whose date sheet is open
   const fileRef = useRef(null)
 
   // Free the object URLs when we leave the screen
@@ -35,7 +49,7 @@ export default function PhotoTriageScreen({ serviceKey, onBookService, onBookIns
   }
 
   const canSend = photos.length > 0 || note.trim().length > 0
-  const [lo, hi] = estimateRange(serviceKey)
+  const quotes = proQuotes(serviceKey)
 
   return (
     <GradientHeader title="Send a pro a photo" onBack={onBack}>
@@ -44,8 +58,9 @@ export default function PhotoTriageScreen({ serviceKey, onBookService, onBookIns
           <>
             <h2 className="text-2xl font-semibold text-black">Show us the problem</h2>
             <p className="mt-1 text-sm text-gray-400">
-              Add a photo or two and a quick note. A Setl {service.label.toLowerCase()} pro will
-              send you a ballpark — no visit needed to start.
+              Add a photo or two and a quick note. We&apos;ll send it to Setl{' '}
+              {service.label.toLowerCase()} pros — they reply with a ballpark and you pick who
+              comes. No visit needed to start.
             </p>
 
             {/* Photo tiles */}
@@ -107,12 +122,12 @@ export default function PhotoTriageScreen({ serviceKey, onBookService, onBookIns
               disabled={!canSend}
               onClick={() => {
                 setStatus('sending')
-                // Simulated: a pro reviews the photos and replies. Later this
-                // is a real message from an available professional.
+                // Simulated: pros review the photos and reply. Later these are
+                // real responses from available professionals.
                 setTimeout(() => setStatus('replied'), 2600)
               }}
             >
-              Send to a professional
+              Send to pros
             </GradientButton>
             {!canSend && (
               <p className="mt-2 text-center text-xs text-gray-400">
@@ -122,42 +137,60 @@ export default function PhotoTriageScreen({ serviceKey, onBookService, onBookIns
           </>
         ) : (
           <>
-            <h2 className="text-2xl font-semibold text-black">A pro replied</h2>
+            <h2 className="text-2xl font-semibold text-black">{quotes.length} pros replied</h2>
+            <p className="mt-1 text-sm text-gray-400">
+              Pick who you want to come. The exact price is confirmed on site — you pay after the
+              work is done.
+            </p>
 
-            {/* The pro's reply */}
-            <div className="mt-4 flex gap-3 rounded-2xl bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
-              <div
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
-                style={{ background: service.providers[0].color }}
-              >
-                {service.providers[0].name[0].toUpperCase()}
-              </div>
-              <div className="min-w-0">
-                <p className="font-semibold text-black">{service.providers[0].name}</p>
-                <p className="mt-1 text-sm text-gray-600">
-                  Thanks for the photo. Based on what I can see, a job like this usually runs{' '}
-                  <span className="font-semibold text-black">
-                    AED {lo}–{hi}
-                  </span>
-                  . I can confirm the exact price on site. Want me to come do it, or book a full
-                  inspection first?
-                </p>
-              </div>
+            <div className="mt-4 flex flex-col gap-3">
+              {quotes.map(({ provider, lo, hi }) => (
+                <div
+                  key={provider.id}
+                  className="rounded-2xl bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
+                      style={{ background: provider.color }}
+                    >
+                      {provider.name[0].toUpperCase()}
+                    </div>
+                    <div className="min-w-0 grow">
+                      <p className="truncate font-semibold text-black">{provider.name}</p>
+                      <p className="text-xs text-gray-400">
+                        ★ {provider.rating}
+                        {provider.slots?.[0] ? ` · earliest ${provider.slots[0]}` : ''}
+                      </p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="text-sm font-semibold text-black">
+                        AED {lo}–{hi}
+                      </p>
+                      <p className="text-[10px] text-gray-400">ballpark</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setChosen({ provider, lo, hi })}
+                    className="mt-3 h-10 w-full cursor-pointer rounded-full bg-linear-[270deg,#366EE9_-95.36%,#F15CFA_212.48%] text-sm font-medium text-white active:opacity-90"
+                  >
+                    Choose {provider.name.split(' ')[0]}
+                  </button>
+                </div>
+              ))}
             </div>
 
             <p className="mt-3 text-center text-[11px] text-gray-400">
-              Ballpark from recent Setl jobs — not a final quote.
+              Ballparks from recent Setl jobs — not final quotes.
             </p>
 
             <div className="grow" />
 
-            <GradientButton className="mt-4" onClick={onBookService}>
-              Book this repair
-            </GradientButton>
             <button
               type="button"
               onClick={onBookInspection}
-              className="mt-3 h-12 w-full cursor-pointer rounded-xl border border-[#8442FF] bg-white text-[15px] font-medium text-[#8442FF] transition-transform duration-100 active:scale-[0.98]"
+              className="mt-4 h-12 w-full cursor-pointer rounded-xl border border-[#8442FF] bg-white text-[15px] font-medium text-[#8442FF] transition-transform duration-100 active:scale-[0.98]"
             >
               Book an inspection instead
             </button>
@@ -167,6 +200,15 @@ export default function PhotoTriageScreen({ serviceKey, onBookService, onBookIns
           </>
         )}
       </div>
+
+      {chosen && (
+        <DateTimeSheet
+          provider={chosen.provider}
+          title="Pick a time"
+          onClose={() => setChosen(null)}
+          onConfirm={({ date, time }) => onChoosePro(chosen.provider, date, time, [chosen.lo, chosen.hi])}
+        />
+      )}
     </GradientHeader>
   )
 }

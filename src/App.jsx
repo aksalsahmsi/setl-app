@@ -315,7 +315,20 @@ function App() {
     photoTriage: (
       <PhotoTriageScreen
         serviceKey={flow.service}
-        onBookService={() => bookService(flow.service, flow.symptoms)}
+        onChoosePro={(provider, date, time, quote) => {
+          // Customer picked a pro from the photo replies — book that worker
+          // to come; the exact price is confirmed on site, paid after.
+          setBooking({
+            provider,
+            date,
+            time,
+            variant: 'booking',
+            service: flow.service,
+            symptoms: flow.symptoms,
+            photoQuote: quote,
+          })
+          setScreen('orderDetails')
+        }}
         onBookInspection={() => openProviders(flow.service, 'inspection', flow.symptoms)}
         onBack={() => setScreen('home')}
       />

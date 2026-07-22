@@ -115,10 +115,12 @@ export default function WizardScreen({ onRoute, onBack }) {
                 className="cursor-pointer rounded-xl border border-gray-200 bg-white p-4 text-left active:scale-[0.99]"
               >
                 <span className="block text-[16px] font-medium text-black">
-                  Not sure — book an inspection
+                  {service.requiresInspection ? 'Not sure — book an inspection' : 'Not sure — send a pro a photo'}
                 </span>
                 <span className="mt-0.5 block text-xs text-gray-400">
-                  Standardized fee, credited toward your repair if you proceed
+                  {service.requiresInspection
+                    ? 'Standardized fee, credited toward your repair if you proceed'
+                    : 'Get a ballpark from real pros — no visit needed to start'}
                 </span>
               </button>
             </div>

@@ -34,7 +34,15 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack, onR
     ? [{ label: 'Inspection visit', qty: 1, price: booking.price }]
     : isMaintenance
       ? booking.products.map((p) => ({ label: p.name, qty: p.qty, price: p.price }))
-      : booking.options
+      : booking.photoQuote
+        ? [
+            {
+              label: 'Service (from your photos)',
+              qty: 1,
+              price: Math.round((booking.photoQuote[0] + booking.photoQuote[1]) / 2),
+            },
+          ]
+        : booking.options
         ? [
             { label: 'Visit & labor', qty: 1, price: booking.provider.bookingFee },
             ...booking.options.map((o) => ({ label: o.label, qty: 1, price: o.price })),
