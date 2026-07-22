@@ -26,15 +26,17 @@ function proQuotes(serviceKey) {
 }
 
 // Photo-first triage (inspired by Mahara, and by how people already send
-// WhatsApp photos to a handyman): instead of committing to a paid inspection,
-// the customer snaps a photo + describes the problem; it goes to several pros
-// in that field, and the customer picks whichever reply they like — or falls
-// back to a paid inspection.
+// WhatsApp photos to a handyman): the customer snaps a photo + describes the
+// problem; it goes to several pros in that field; the customer chats with a
+// pro and books whoever they like — or falls back to a paid inspection.
 export default function PhotoTriageScreen({ serviceKey, onChoosePro, onBookInspection, onBack }) {
   const service = SERVICES[serviceKey]
   const [photos, setPhotos] = useState([]) // { url, name }
   const [note, setNote] = useState('')
-  const [status, setStatus] = useState('compose') // compose | sending | replied
+  const [status, setStatus] = useState('compose') // compose | sending | replied | chat
+  const [chatPro, setChatPro] = useState(null) // { provider, lo, hi } being chatted with
+  const [messages, setMessages] = useState([])
+  const [draft, setDraft] = useState('')
   const [chosen, setChosen] = useState(null) // pro whose date sheet is open
   const fileRef = useRef(null)
 
@@ -48,13 +50,94 @@ export default function PhotoTriageScreen({ serviceKey, onChoosePro, onBookInspe
     setPhotos((p) => [...p, ...next])
   }
 
+  function openChat(q) {
+    setChatPro(q)
+    setMessages([
+      { from: 'me', photos: photos.map((p) => p.url), text: note.trim() },
+      {
+        from: 'pro',
+        text: `Thanks for the photos. A job like this usually runs AED ${q.lo}–${q.hi}. I can confirm the exact price on site — happy to come whenever suits you.`,
+      },
+    ])
+    setStatus('chat')
+  }
+
+  function send() {
+    const t = draft.trim()
+    if (!t) return
+    setMessages((m) => [...m, { from: 'me', text: t }])
+    setDraft('')
+    // Simulated reply so the chat feels alive; later this is the real pro.
+    setTimeout(
+      () => setMessages((m) => [...m, { from: 'pro', text: 'Sounds good — tap Book and pick a time that works for you.' }]),
+      1200,
+    )
+  }
+
   const canSend = photos.length > 0 || note.trim().length > 0
   const quotes = proQuotes(serviceKey)
 
+  const headerTitle = status === 'chat' ? chatPro.provider.name : 'Send a pro a photo'
+  function handleBack() {
+    if (status === 'chat') {
+      setStatus('replied')
+      setChatPro(null)
+    } else onBack()
+  }
+
   return (
-    <GradientHeader title="Send a pro a photo" onBack={onBack}>
+    <GradientHeader title={headerTitle} onBack={handleBack}>
       <div className="flex grow flex-col px-4 pt-5 pb-6">
-        {status !== 'replied' ? (
+        {status === 'chat' ? (
+          <>
+            <div className="flex grow flex-col gap-2 overflow-y-auto pb-3">
+              {messages.map((m, i) => (
+                <div key={i} className={m.from === 'me' ? 'self-end' : 'self-start'}>
+                  <div
+                    className={`max-w-[240px] rounded-2xl px-3 py-2 text-sm ${
+                      m.from === 'me' ? 'bg-[#8442FF] text-white' : 'bg-white text-black shadow-[0_2px_8px_rgba(0,0,0,0.06)]'
+                    }`}
+                  >
+                    {m.photos?.length > 0 && (
+                      <div className="mb-1.5 flex flex-wrap gap-1.5">
+                        {m.photos.map((url) => (
+                          <img key={url} src={url} alt="" className="h-16 w-16 rounded-lg object-cover" />
+                        ))}
+                      </div>
+                    )}
+                    {m.text && <p>{m.text}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && send()}
+                placeholder="Message…"
+                className="h-11 grow rounded-full border border-gray-200 px-4 text-sm text-black outline-none placeholder:text-gray-400 focus:border-[#8442FF]"
+              />
+              <button
+                type="button"
+                onClick={send}
+                disabled={!draft.trim()}
+                aria-label="Send message"
+                className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#8442FF] text-white disabled:opacity-40"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z" />
+                </svg>
+              </button>
+            </div>
+
+            <GradientButton className="mt-3" onClick={() => setChosen(chatPro)}>
+              Book {chatPro.provider.name.split(' ')[0]}
+            </GradientButton>
+          </>
+        ) : status !== 'replied' ? (
           <>
             <h2 className="text-2xl font-semibold text-black">Show us the problem</h2>
             <p className="mt-1 text-sm text-gray-400">
@@ -122,8 +205,6 @@ export default function PhotoTriageScreen({ serviceKey, onChoosePro, onBookInspe
               disabled={!canSend}
               onClick={() => {
                 setStatus('sending')
-                // Simulated: pros review the photos and reply. Later these are
-                // real responses from available professionals.
                 setTimeout(() => setStatus('replied'), 2600)
               }}
             >
@@ -139,45 +220,46 @@ export default function PhotoTriageScreen({ serviceKey, onChoosePro, onBookInspe
           <>
             <h2 className="text-2xl font-semibold text-black">{quotes.length} pros replied</h2>
             <p className="mt-1 text-sm text-gray-400">
-              Pick who you want to come. The exact price is confirmed on site — you pay after the
-              work is done.
+              Tap a pro to chat, then book whoever you like. The exact price is confirmed on site —
+              you pay after the work is done.
             </p>
 
             <div className="mt-4 flex flex-col gap-3">
-              {quotes.map(({ provider, lo, hi }) => (
-                <div
-                  key={provider.id}
-                  className="rounded-2xl bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
+              {quotes.map((q) => (
+                <button
+                  key={q.provider.id}
+                  type="button"
+                  onClick={() => openChat(q)}
+                  className="rounded-2xl bg-white p-4 text-left shadow-[0_2px_8px_rgba(0,0,0,0.06)] active:scale-[0.99]"
                 >
                   <div className="flex items-center gap-3">
                     <div
                       className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
-                      style={{ background: provider.color }}
+                      style={{ background: q.provider.color }}
                     >
-                      {provider.name[0].toUpperCase()}
+                      {q.provider.name[0].toUpperCase()}
                     </div>
                     <div className="min-w-0 grow">
-                      <p className="truncate font-semibold text-black">{provider.name}</p>
+                      <p className="truncate font-semibold text-black">{q.provider.name}</p>
                       <p className="text-xs text-gray-400">
-                        ★ {provider.rating}
-                        {provider.slots?.[0] ? ` · earliest ${provider.slots[0]}` : ''}
+                        ★ {q.provider.rating}
+                        {q.provider.slots?.[0] ? ` · earliest ${q.provider.slots[0]}` : ''}
                       </p>
                     </div>
                     <div className="shrink-0 text-right">
                       <p className="text-sm font-semibold text-black">
-                        AED {lo}–{hi}
+                        AED {q.lo}–{q.hi}
                       </p>
                       <p className="text-[10px] text-gray-400">ballpark</p>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setChosen({ provider, lo, hi })}
-                    className="mt-3 h-10 w-full cursor-pointer rounded-full bg-linear-[270deg,#366EE9_-95.36%,#F15CFA_212.48%] text-sm font-medium text-white active:opacity-90"
-                  >
-                    Choose {provider.name.split(' ')[0]}
-                  </button>
-                </div>
+                  <span className="mt-3 flex h-10 w-full items-center justify-center gap-2 rounded-full bg-linear-[270deg,#366EE9_-95.36%,#F15CFA_212.48%] text-sm font-medium text-white">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 11.5a8.38 8.38 0 0 1-8.5 8.5 8.5 8.5 0 0 1-3.8-.9L3 21l1.9-5.7a8.5 8.5 0 0 1-.9-3.8A8.38 8.38 0 0 1 12.5 3 8.38 8.38 0 0 1 21 11.5Z" />
+                    </svg>
+                    Chat with {q.provider.name.split(' ')[0]}
+                  </span>
+                </button>
               ))}
             </div>
 
