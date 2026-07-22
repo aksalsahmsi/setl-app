@@ -60,7 +60,7 @@ export default function ProviderAccountScreen({ orders = [], onSwitchToCustomer,
         Log out
       </button>
 
-      <p className="mt-6 text-center text-xs text-gray-300">Setl Provider v0.1.0</p>
+      <p className="mt-6 text-center text-xs text-gray-300">Setl Service Provider v0.1.0</p>
     </div>
   )
 }
