@@ -94,7 +94,7 @@ export default function CustomerLogin({ onContinue, asProvider = false, onSwitch
           onClick={onSwitchMode}
           className="mx-auto mt-6 block cursor-pointer py-2 text-sm text-[#8442FF] underline underline-offset-2"
         >
-          {asProvider ? 'I need a service — continue as customer' : 'I offer services — continue as a service provider'}
+          {asProvider ? 'I need a service — continue as customer' : 'I offer services — continue as a worker'}
         </button>
       </form>
     </div>
