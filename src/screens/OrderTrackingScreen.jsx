@@ -10,8 +10,11 @@ import { getInspectionProducts } from '../data/providers.js'
 // gray skeleton boxes; when the inspector finishes, the proposed products
 // appear with their prices and the fair market range. The customer accepts
 // (Next) or rejects with a reason.
-export default function OrderTrackingScreen({ booking, counts, onProceedToPay, onReject, onBack, onEstimateReady, onOrderEvent }) {
-  const [products, setProducts] = useState(null)
+export default function OrderTrackingScreen({ booking, order, counts, onProceedToPay, onReject, onBack, onEstimateReady, onOrderEvent }) {
+  // When a real worker has taken this job (autopilot off), the estimate comes
+  // from their "Add products" screen — not the simulation below.
+  const workerDriven = order?.autopilot === false
+  const [localProducts, setLocalProducts] = useState(null)
   const [editing, setEditing] = useState(false) // "Edit selected work" mode
   const [deselected, setDeselected] = useState(() => new Set()) // dropped line items
   const [asking, setAsking] = useState(false) // question sheet open
@@ -25,16 +28,35 @@ export default function OrderTrackingScreen({ booking, counts, onProceedToPay, o
     return () => clearTimeout(t)
   }, [])
 
-  // Simulated for now: the inspector's product list "arrives" a few seconds
-  // after the visit. Later this comes from the backend instead.
+  // Standalone (no worker) demo keeps the simulated estimate that "arrives" a
+  // few seconds after the visit. Once a worker is on the job, we wait for the
+  // estimate they actually send instead.
   useEffect(() => {
+    if (workerDriven) return undefined
     const t = setTimeout(() => {
       const arrived = getInspectionProducts(booking.service, counts)
-      setProducts(arrived)
+      setLocalProducts(arrived)
       onEstimateReady?.(arrived) // advances the order to estimate_ready
     }, 4000)
     return () => clearTimeout(t)
-  }, [booking.service, counts])
+  }, [booking.service, counts, workerDriven])
+
+  // The estimate to show: the worker's real line items once they've sent it,
+  // otherwise the simulated one. `null` = still waiting (skeleton).
+  const products = workerDriven
+    ? order?.state === 'estimate_ready' || order?.state === 'approved'
+      ? (order.products ?? [])
+      : null
+    : localProducts
+
+  // While worker-driven and still waiting, reflect where the worker actually is.
+  const waitingText = workerDriven
+    ? order?.state === 'in_progress'
+      ? 'Inspection in progress — the estimate will show here once it’s done'
+      : `${booking.provider.name} is on the way to you`
+    : arrived
+      ? 'Inspection in progress — the products & prices will show here once it’s done'
+      : `${booking.provider.name} is on the way to you`
 
   const selected = (products ?? []).filter((p) => !deselected.has(p.name))
   const total = selected.reduce((sum, p) => sum + p.price, 0)
@@ -72,11 +94,7 @@ export default function OrderTrackingScreen({ booking, counts, onProceedToPay, o
 
       {!products ? (
         <>
-          <p className="mt-5 text-center text-sm text-gray-400">
-            {arrived
-              ? 'Inspection in progress — the products & prices will show here once it’s done'
-              : `${booking.provider.name} is on the way to you`}
-          </p>
+          <p className="mt-5 text-center text-sm text-gray-400">{waitingText}</p>
           {/* Skeleton placeholders, like the design */}
           {[1, 2, 3].map((i) => (
             <div
@@ -91,6 +109,19 @@ export default function OrderTrackingScreen({ booking, counts, onProceedToPay, o
               </div>
             </div>
           ))}
+        </>
+      ) : products.length === 0 ? (
+        <>
+          <div className="mt-6 rounded-2xl bg-white p-5 text-center shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+            <p className="font-semibold text-black">No parts needed</p>
+            <p className="mt-1 text-sm text-gray-400">
+              The inspector found nothing to replace — the visit is covered by your inspection fee.
+            </p>
+          </div>
+          <div className="grow" />
+          <GradientButton className="mt-5" onClick={() => onProceedToPay([])}>
+            Approve &amp; close
+          </GradientButton>
         </>
       ) : (
         <>

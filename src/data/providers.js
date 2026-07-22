@@ -337,6 +337,84 @@ export const SERVICES = {
   },
 }
 
+// The logged-in worker (provider app). In the sim there's one worker on the
+// device; jobs the customer books surface in their New Requests. Later this
+// comes from the provider's authenticated account.
+export const PROVIDER_ME = {
+  id: 'me',
+  name: 'Alana Cary',
+  trade: 'Plumber',
+  tradeKey: 'plumber',
+  color: '#7C3AED',
+  rating: 4.8,
+  jobsDone: 214,
+  phone: '501234567',
+}
+
+// The customer as the worker sees them (single demo customer on the device).
+// Later this is the real customer attached to each order.
+export const CUSTOMER_ME = {
+  name: 'Ahmed Alshamsi',
+  phone: '+971 50 123 4567',
+  address: 'Villa 12, Al Nahyan St — Abu Dhabi',
+  area: 'Al Nahyan, Abu Dhabi',
+}
+
+// Parts/line items a worker can add when building an estimate on site
+// (the "Add products" screen). Prices are the default unit price; the worker
+// can override. `market` = typical range from recent Setl jobs, reused by the
+// customer's ProductCard so the estimate they approve shows the same verdict
+// chips. Falls back to a generic list for trades without a specific catalog.
+export const PART_CATALOG = {
+  plumber: [
+    { name: 'Kitchen Faucet', price: 45, icon: 'faucet', market: [30, 50] },
+    { name: 'Bathroom Faucet', price: 40, icon: 'faucet', market: [30, 50] },
+    { name: 'Water Heater Hose', price: 35, icon: 'pipe', market: [25, 40] },
+    { name: 'Pipe (per metre)', price: 20, icon: 'pipe', market: [15, 30] },
+    { name: 'Drain unblocking', price: 60, icon: 'pipe', market: [50, 90] },
+    { name: 'Mixer valve', price: 55, icon: 'faucet', market: [40, 70] },
+  ],
+  electrician: [
+    { name: 'Wiring repair', price: 120, icon: 'tool', market: [90, 140] },
+    { name: 'Breaker replacement', price: 80, icon: 'tool', market: [60, 90] },
+    { name: 'Socket / switch', price: 40, icon: 'tool', market: [30, 50] },
+    { name: 'Light fixture', price: 60, icon: 'tool', market: [45, 80] },
+  ],
+  technician: [
+    { name: 'Spare part', price: 150, icon: 'tool', market: [120, 180] },
+    { name: 'Repair labour', price: 100, icon: 'tool', market: [80, 120] },
+    { name: 'Replacement unit', price: 220, icon: 'tool', market: [180, 260] },
+  ],
+  network: [
+    { name: 'Router replacement', price: 180, icon: 'tool', market: [150, 220] },
+    { name: 'Wi-Fi extender', price: 120, icon: 'tool', market: [100, 150] },
+    { name: 'Cabling (per point)', price: 70, icon: 'tool', market: [50, 90] },
+  ],
+  curtains: [
+    { name: 'Track replacement', price: 90, icon: 'tool', market: [70, 110] },
+    { name: 'Motor repair', price: 150, icon: 'tool', market: [120, 200] },
+  ],
+  outdoor: [
+    { name: 'Frame parts', price: 110, icon: 'tool', market: [90, 140] },
+    { name: 'Repair labour', price: 120, icon: 'tool', market: [100, 150] },
+  ],
+  ac: [
+    { name: 'AC refilling', price: 40, icon: 'ac', market: [30, 50] },
+    { name: 'AC cleaning', price: 40, icon: 'ac', market: [30, 45] },
+    { name: 'Compressor part', price: 180, icon: 'ac', market: [150, 220] },
+  ],
+}
+
+// A worker's on-site parts catalog for their trade (or a generic fallback).
+export function getPartCatalog(serviceKey) {
+  return (
+    PART_CATALOG[serviceKey] ?? [
+      { name: 'Replacement part', price: 100, icon: 'tool', market: [80, 120] },
+      { name: 'Repair labour', price: 80, icon: 'tool', market: [60, 100] },
+    ]
+  )
+}
+
 // Provider-app onboarding data
 export const PROVIDER_SERVICES = [
   'Part time cleaners',

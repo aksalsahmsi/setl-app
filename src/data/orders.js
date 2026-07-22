@@ -96,6 +96,13 @@ export function orderAction(order) {
 
 let nextOrderId = 1
 
+// When orders are restored from localStorage, continue the id sequence past
+// the highest existing id so a new booking can't collide with a restored one.
+export function seedOrderIds(orders) {
+  const max = orders.reduce((m, o) => Math.max(m, o.id ?? 0), 0)
+  nextOrderId = max + 1
+}
+
 // flowType: 'inspection' (visit -> estimate -> approval) | 'direct' (booked work).
 // `service` is the label shown in lists; `serviceKey` indexes SERVICES config.
 // Money fields: `total` = paid so far, `amountDue` = final-invoice amount
@@ -104,6 +111,10 @@ let nextOrderId = 1
 export function createOrder({ meta, ...fields }) {
   const order = {
     id: nextOrderId++,
+    // autopilot: the customer-side simulation may auto-advance this order.
+    // A worker accepting the job flips it off (see App) so the provider app
+    // drives the lifecycle instead of the sim — the two never fight.
+    autopilot: true,
     ...fields,
     state: 'scheduled',
     history: [{ state: 'scheduled', at: Date.now(), ...(meta && { meta }) }],

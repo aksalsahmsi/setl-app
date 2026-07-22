@@ -5,7 +5,7 @@ const MENU = [
   { id: 'help', label: 'Help & support' },
 ]
 
-export default function ProfileScreen({ phone, onLogout }) {
+export default function ProfileScreen({ phone, onSwitchMode, onLogout }) {
   return (
     <div className="font-poppins flex min-h-screen flex-col bg-[#F5F4F7] pb-24">
       <div className="bg-linear-[90deg,#C05CF7,#8442FF] px-4 pt-8 pb-10 text-white">
@@ -40,10 +40,23 @@ export default function ProfileScreen({ phone, onLogout }) {
         ))}
       </div>
 
+      {onSwitchMode && (
+        <button
+          type="button"
+          onClick={onSwitchMode}
+          className="mx-3 mt-4 flex cursor-pointer items-center justify-between rounded-2xl bg-white px-4 py-3.5 text-left shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
+        >
+          <span className="text-[15px] font-medium text-[#8442FF]">Switch to provider app</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8442FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M8 3 4 7l4 4M4 7h13M16 21l4-4-4-4M20 17H7" />
+          </svg>
+        </button>
+      )}
+
       <button
         type="button"
         onClick={onLogout}
-        className="mx-3 mt-4 cursor-pointer rounded-2xl bg-white px-4 py-3.5 text-left text-[15px] text-red-500 shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
+        className="mx-3 mt-3 cursor-pointer rounded-2xl bg-white px-4 py-3.5 text-left text-[15px] text-red-500 shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
       >
         Log out
       </button>

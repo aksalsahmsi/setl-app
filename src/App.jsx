@@ -20,12 +20,38 @@ import ChooseServiceScreen from './screens/provider/ChooseServiceScreen.jsx'
 import CoverageScreen from './screens/provider/CoverageScreen.jsx'
 import TimeSlotsScreen from './screens/provider/TimeSlotsScreen.jsx'
 import ProviderDoneScreen from './screens/provider/ProviderDoneScreen.jsx'
+import ProviderHomeScreen from './screens/provider/ProviderHomeScreen.jsx'
+import ProviderOrderScreen from './screens/provider/ProviderOrderScreen.jsx'
+import ProviderNavigateScreen from './screens/provider/ProviderNavigateScreen.jsx'
+import ProviderJobScreen from './screens/provider/ProviderJobScreen.jsx'
+import WaitingApprovalScreen from './screens/provider/WaitingApprovalScreen.jsx'
+import ProviderRatingsScreen from './screens/provider/ProviderRatingsScreen.jsx'
+import ProviderNotificationsScreen from './screens/provider/ProviderNotificationsScreen.jsx'
+import ProviderAccountScreen from './screens/provider/ProviderAccountScreen.jsx'
 import TabBar from './components/TabBar.jsx'
+import ProviderTabBar from './components/ProviderTabBar.jsx'
 import { SERVICES } from './data/providers.js'
 import WizardScreen from './screens/WizardScreen.jsx'
-import { advance, createOrder, isActive, recordEvent, transition } from './data/orders.js'
+import { advance, createOrder, isActive, recordEvent, seedOrderIds, transition } from './data/orders.js'
 
 const TAB_SCREENS = ['home', 'orders', 'profile']
+const PROVIDER_TAB_SCREENS = ['providerHome', 'providerRatings', 'providerNotifications', 'providerAccount']
+
+// Orders are shared between the customer and provider apps and persisted so
+// the two-sided flow survives role-switching (and a reload) on one device.
+const ORDERS_KEY = 'setl_orders'
+function loadOrders() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]')
+    if (Array.isArray(saved)) {
+      seedOrderIds(saved)
+      return saved
+    }
+  } catch {
+    // ignore corrupt storage
+  }
+  return []
+}
 
 // Customer flow (pay after completion — decision B):
 //   login -> otp -> location -> home -> service -> providers -> confirm (0 due) -> success
@@ -73,7 +99,8 @@ function App() {
   }
   const [flow, setFlow] = useState({ service: 'ac', variant: 'booking' }) // which provider list is open
   const [booking, setBooking] = useState(null) // { provider, date, time, variant, service, ... }
-  const [orders, setOrders] = useState([])
+  const [orders, setOrders] = useState(loadOrders)
+  const [workerOrderId, setWorkerOrderId] = useState(null) // job the worker has open
   const [successInfo, setSuccessInfo] = useState(null) // { variant, total, credit } for SuccessScreen
   const [payingOrderId, setPayingOrderId] = useState(null) // order open on the invoice screen
   const [providerProfile, setProviderProfile] = useState({ services: [], range: 15, slots: null })
@@ -90,6 +117,16 @@ function App() {
     const t = setTimeout(() => setToast(null), 4000)
     return () => clearTimeout(t)
   }, [toast])
+
+  // Persist orders so the customer/provider hand-off survives role-switching
+  // and reloads (the two-sided flow is demoed on one device).
+  useEffect(() => {
+    try {
+      localStorage.setItem(ORDERS_KEY, JSON.stringify(orders))
+    } catch {
+      // ignore storage errors (private mode, quota)
+    }
+  }, [orders])
 
   // The next move the simulated provider makes from this state (Phase 4:
   // staged, so the lifecycle is visible on Orders). Inspection orders before
@@ -109,6 +146,9 @@ function App() {
 
   useEffect(() => {
     orders.forEach((ord) => {
+      // A worker has taken this job — the provider app drives it now, not the
+      // sim (autopilot flipped off on Accept). Untouched orders still auto-run.
+      if (ord.autopilot === false) return
       const step = simStep(ord)
       if (!step) return
       const key = `${ord.id}:${ord.state}`
@@ -265,9 +305,89 @@ function App() {
     setScreen('orders')
   }
 
+  // ---- Provider (worker) app: acting on the shared order ----
+  const workerOrder = orders.find((o) => o.id === workerOrderId) ?? null
+
+  function updateOrder(id, updater) {
+    setOrders((os) => os.map((o) => (o.id === id ? updater(o) : o)))
+  }
+
+  // Accept a new request: take it off autopilot (the worker drives it now) and
+  // head out to the customer.
+  function acceptJob(order) {
+    updateOrder(order.id, (o) => ({ ...transition(o, 'provider_en_route'), autopilot: false }))
+    setWorkerOrderId(order.id)
+    setScreen('providerNavigate')
+    notify(`On the way to ${order.service}`)
+  }
+
+  function declineJob(order) {
+    updateOrder(order.id, (o) => ({ ...transition(o, 'cancelled_by_provider'), autopilot: false }))
+    setWorkerOrderId(null)
+    setScreen('providerHome')
+  }
+
+  function arrivedJob(order) {
+    updateOrder(order.id, (o) => transition(o, 'in_progress'))
+    setScreen('providerJob')
+  }
+
+  // Resume an accepted job from its details screen — go to the right step.
+  function continueJob(order) {
+    setWorkerOrderId(order.id)
+    if (order.state === 'provider_en_route') setScreen('providerNavigate')
+    else if (order.state === 'estimate_ready') setScreen('providerWaiting')
+    else if (order.state === 'approved') startWork(order)
+    else setScreen('providerJob')
+  }
+
+  // Inspection done: send the itemized estimate to the customer to approve.
+  // The products land on the order so the customer's tracking shows exactly
+  // what the worker chose (this replaces the old setTimeout fake estimate).
+  function sendEstimate(products) {
+    if (!workerOrderId) return
+    updateOrder(workerOrderId, (o) => ({ ...transition(o, 'estimate_ready', { products }), products }))
+    setScreen('providerWaiting')
+    notify('Estimate sent — waiting for the customer')
+  }
+
+  // Customer approved (order → approved): worker starts the actual work.
+  function startWork(order) {
+    updateOrder(order.id, (o) => transition(o, 'work_in_progress'))
+    setWorkerOrderId(order.id)
+    setScreen('providerJob')
+  }
+
+  // Job finished on site. Direct jobs go in_progress → work_done; approved
+  // repairs go work_in_progress → work_done. Then it awaits customer payment.
+  function completeJob(order) {
+    updateOrder(order.id, (o) => transition(transition(o, 'work_done'), 'awaiting_payment'))
+    setWorkerOrderId(null)
+    setScreen('providerHome')
+    notify('Job marked done — customer will be asked to pay')
+  }
+
+  function reportJob(order, toState, reason) {
+    updateOrder(order.id, (o) => transition(o, toState, { reason }))
+    setWorkerOrderId(null)
+    setScreen('providerHome')
+  }
+
+  function switchToProvider() {
+    setMode('provider')
+    setWorkerOrderId(null)
+    setScreen('providerHome')
+  }
+
+  function switchToCustomer() {
+    setMode('customer')
+    setScreen('home')
+  }
+
   function logout() {
     setMode('customer')
     setScreen('login')
+    setWorkerOrderId(null)
     setPhone('')
     setCounts({ refill: 1, clean: 1 })
     setHours(2)
@@ -298,7 +418,7 @@ function App() {
         }}
       />
     ),
-    otp: <OtpScreen onVerify={() => setScreen(mode === 'provider' ? 'chooseService' : 'location')} />,
+    otp: <OtpScreen onVerify={() => setScreen(mode === 'provider' ? 'providerHome' : 'location')} />,
     location: <LocationScreen onConfirm={() => setScreen('home')} />,
     home: (
       <HomeScreen
@@ -320,13 +440,25 @@ function App() {
             setPayingOrderId(order.id)
             setScreen('invoice')
           } else {
+            // Rebuild the tracking context from the live order (so tracking
+            // works whether reached from booking or from the Orders list).
+            setBooking({
+              provider: order.provider,
+              date: order.date,
+              time: order.time,
+              variant: order.flowType === 'inspection' ? 'inspection' : 'booking',
+              service: order.serviceKey,
+              symptoms: order.history?.find((h) => h.meta?.symptoms)?.meta?.symptoms,
+              orderId: order.id,
+              price: order.total,
+            })
             setScreen('tracking')
           }
         }}
         onBook={() => setScreen('home')}
       />
     ),
-    profile: <ProfileScreen phone={phone} onLogout={logout} />,
+    profile: <ProfileScreen phone={phone} onSwitchMode={switchToProvider} onLogout={logout} />,
     acService: (
       <AcServiceScreen
         counts={counts}
@@ -449,6 +581,7 @@ function App() {
     tracking: (
       <OrderTrackingScreen
         booking={booking}
+        order={orders.find((o) => o.id === booking?.orderId) ?? null}
         counts={counts}
         onBack={() => setScreen('orders')}
         onEstimateReady={handleEstimateReady}
@@ -504,12 +637,64 @@ function App() {
       <ProviderDoneScreen
         services={providerProfile.services}
         range={providerProfile.range}
-        onDone={logout}
+        onDone={() => setScreen('providerHome')}
       />
+    ),
+    // Provider (worker) app
+    providerHome: (
+      <ProviderHomeScreen
+        orders={orders}
+        onOpenOrder={(order) => {
+          setWorkerOrderId(order.id)
+          setScreen('providerOrder')
+        }}
+      />
+    ),
+    providerOrder: (
+      <ProviderOrderScreen
+        order={workerOrder}
+        onAccept={acceptJob}
+        onDecline={declineJob}
+        onContinue={continueJob}
+        onBack={() => setScreen('providerHome')}
+      />
+    ),
+    providerNavigate: (
+      <ProviderNavigateScreen
+        order={workerOrder}
+        onArrived={arrivedJob}
+        onBack={() => setScreen('providerHome')}
+      />
+    ),
+    providerJob: (
+      <ProviderJobScreen
+        order={workerOrder}
+        onSendEstimate={sendEstimate}
+        onDone={completeJob}
+        onReport={reportJob}
+        onDial={() => notify('Calling the customer…')}
+        onBack={() => setScreen('providerHome')}
+      />
+    ),
+    providerWaiting: (
+      <WaitingApprovalScreen
+        order={workerOrder}
+        onStartWork={startWork}
+        onBack={() => setScreen('providerHome')}
+      />
+    ),
+    providerRatings: <ProviderRatingsScreen />,
+    providerNotifications: <ProviderNotificationsScreen orders={orders} />,
+    providerAccount: (
+      <ProviderAccountScreen orders={orders} onSwitchToCustomer={switchToCustomer} onLogout={logout} />
     ),
   }
 
   const activeOrders = orders.filter(isActive).length
+  const newRequests = orders.filter((o) => o.state === 'scheduled').length
+  const providerAlerts = orders.filter((o) =>
+    ['scheduled', 'approved', 'awaiting_payment'].includes(o.state),
+  ).length
 
   return (
     <div className="relative mx-auto min-h-screen w-full max-w-[375px] overflow-hidden bg-white shadow-xl">
@@ -530,6 +715,14 @@ function App() {
       )}
       {mode === 'customer' && TAB_SCREENS.includes(screen) && (
         <TabBar active={screen} onChange={setScreen} ordersBadge={activeOrders} />
+      )}
+      {mode === 'provider' && PROVIDER_TAB_SCREENS.includes(screen) && (
+        <ProviderTabBar
+          active={screen}
+          onChange={setScreen}
+          requestBadge={newRequests}
+          notifBadge={providerAlerts}
+        />
       )}
     </div>
   )
