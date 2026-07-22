@@ -16,6 +16,7 @@ export default function CleaningServiceScreen({
   favorite,
   onRebook,
   onClearFavorite,
+  onOpenProfile,
   onSearchProviders,
   onBack,
 }) {
@@ -29,18 +30,24 @@ export default function CleaningServiceScreen({
           <div className="mb-5 rounded-2xl bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
             <p className="text-xs font-medium text-[#8442FF]">Your regular cleaner</p>
             <div className="mt-2 flex items-center gap-3">
-              <div
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white"
-                style={{ background: favorite.color }}
+              <button
+                type="button"
+                onClick={() => onOpenProfile?.(favorite)}
+                className="flex min-w-0 grow cursor-pointer items-center gap-3 text-left"
               >
-                {favorite.name[0].toUpperCase()}
-              </div>
-              <div className="min-w-0 grow">
-                <p className="truncate font-semibold text-black">{favorite.name}</p>
-                <p className="text-xs text-gray-400">
-                  ★ {favorite.rating} · {favorite.bookingFee} AED/hr
-                </p>
-              </div>
+                <div
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white"
+                  style={{ background: favorite.color }}
+                >
+                  {favorite.name[0].toUpperCase()}
+                </div>
+                <div className="min-w-0 grow">
+                  <p className="truncate font-semibold text-black">{favorite.name}</p>
+                  <p className="text-xs text-gray-400">
+                    ★ {favorite.rating} · {favorite.bookingFee} AED/hr · View profile
+                  </p>
+                </div>
+              </button>
               <button
                 type="button"
                 onClick={onClearFavorite}

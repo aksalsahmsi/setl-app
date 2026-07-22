@@ -17,6 +17,7 @@ export default function ProviderCard({
   onBook,
   isFavorite,
   onToggleFavorite,
+  onOpenProfile,
 }) {
   const initials = provider.name
     .split(' ')
@@ -34,7 +35,14 @@ export default function ProviderCard({
         {initials}
       </div>
       <div className="min-w-0 grow">
-        <p className="truncate font-semibold text-black">{provider.name}</p>
+        <button
+          type="button"
+          onClick={onOpenProfile}
+          disabled={!onOpenProfile}
+          className={`block max-w-full truncate text-left font-semibold text-black ${onOpenProfile ? 'cursor-pointer' : ''}`}
+        >
+          {provider.name}
+        </button>
         <p className="mt-0.5 text-sm text-black">
           {price}
           {priceSuffix}
@@ -53,13 +61,24 @@ export default function ProviderCard({
             ))}
           </div>
         )}
-        <button
-          type="button"
-          onClick={onBook}
-          className="mt-1.5 cursor-pointer rounded-full bg-linear-[270deg,#366EE9_-95.36%,#F15CFA_212.48%] px-6 py-1 text-sm text-white active:opacity-90"
-        >
-          {buttonLabel}
-        </button>
+        <div className="mt-1.5 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onBook}
+            className="cursor-pointer rounded-full bg-linear-[270deg,#366EE9_-95.36%,#F15CFA_212.48%] px-6 py-1 text-sm text-white active:opacity-90"
+          >
+            {buttonLabel}
+          </button>
+          {onOpenProfile && (
+            <button
+              type="button"
+              onClick={onOpenProfile}
+              className="cursor-pointer text-sm font-medium text-[#8442FF]"
+            >
+              View profile
+            </button>
+          )}
+        </div>
       </div>
       <div className="flex flex-col items-end gap-2 self-start">
         {onToggleFavorite && (

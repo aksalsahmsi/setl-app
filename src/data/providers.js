@@ -31,11 +31,53 @@ export const PLUMBER_PROVIDERS = [
   { id: 'pl3', name: 'Nu Flow', inspectionFee: 18, bookingFee: 18, rating: 4.7, color: '#1D3F8F', perHour: true, slots: ['Today 1:45pm', 'Tomorrow 10:30am', 'Tomorrow 4:00pm'] },
 ]
 
-// Category 1 (hourly, no inspection): rate is per hour.
+// Category 1 (hourly, no inspection): individual cleaners the customer can
+// browse, view a profile for, book, and set as their regular. Rate is per
+// hour. Profile fields (jobsDone, years, languages, verified, bio) power the
+// worker-profile screen — the "who's coming into my home" trust piece.
 export const CLEANING_PROVIDERS = [
-  { id: 'cl1', name: 'Sparkle Home Cleaning', bookingFee: 25, rating: 4.8, color: '#7C3AED', perHour: true, slots: ['Today 3:00pm', 'Today 5:30pm', 'Tomorrow 9:00am'] },
-  { id: 'cl2', name: 'Maid in UAE', bookingFee: 30, rating: 4.9, color: '#0FA3A3', perHour: true, slots: ['Today 1:30pm', 'Tomorrow 8:30am', 'Tomorrow 2:00pm'] },
-  { id: 'cl3', name: 'CleanCo Services', bookingFee: 22, rating: 4.5, color: '#E0442B', perHour: true, slots: ['Tomorrow 10:00am', 'Tomorrow 12:30pm', 'Tomorrow 5:00pm'] },
+  {
+    id: 'cl1',
+    name: 'Maria S.',
+    bookingFee: 25,
+    rating: 4.8,
+    color: '#7C3AED',
+    perHour: true,
+    slots: ['Today 3:00pm', 'Today 5:30pm', 'Tomorrow 9:00am'],
+    jobsDone: 214,
+    years: 6,
+    languages: ['English', 'Arabic'],
+    verified: true,
+    bio: 'Detail-focused deep cleaning, pet-friendly. Brings her own supplies on request.',
+  },
+  {
+    id: 'cl2',
+    name: 'Grace A.',
+    bookingFee: 30,
+    rating: 4.9,
+    color: '#0FA3A3',
+    perHour: true,
+    slots: ['Today 1:30pm', 'Tomorrow 8:30am', 'Tomorrow 2:00pm'],
+    jobsDone: 389,
+    years: 8,
+    languages: ['English', 'Tagalog'],
+    verified: true,
+    bio: 'Kitchens and bathrooms are her specialty. Punctual and quiet — great for work-from-home days.',
+  },
+  {
+    id: 'cl3',
+    name: 'Aisha K.',
+    bookingFee: 22,
+    rating: 4.5,
+    color: '#E0442B',
+    perHour: true,
+    slots: ['Tomorrow 10:00am', 'Tomorrow 12:30pm', 'Tomorrow 5:00pm'],
+    jobsDone: 127,
+    years: 3,
+    languages: ['English', 'Arabic', 'Hindi'],
+    verified: true,
+    bio: 'Friendly and thorough, comfortable with families and villas. Ironing on request.',
+  },
 ]
 
 // Providers for the rest of the catalog (FigJam board): bookingFee is the

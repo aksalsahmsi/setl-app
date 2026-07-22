@@ -7,6 +7,7 @@ import AcServiceScreen from './screens/AcServiceScreen.jsx'
 import CleaningServiceScreen from './screens/CleaningServiceScreen.jsx'
 import ServiceOptionsScreen from './screens/ServiceOptionsScreen.jsx'
 import PhotoTriageScreen from './screens/PhotoTriageScreen.jsx'
+import CleanerProfileScreen from './screens/CleanerProfileScreen.jsx'
 import ProvidersScreen from './screens/ProvidersScreen.jsx'
 import OrderDetailsScreen from './screens/OrderDetailsScreen.jsx'
 import OrderTrackingScreen from './screens/OrderTrackingScreen.jsx'
@@ -43,19 +44,27 @@ function App() {
   // The customer's regular cleaner — persisted so "default" actually sticks
   const [favoriteCleaner, setFavoriteCleaner] = useState(() => {
     try {
-      const s = localStorage.getItem('setl_favorite_cleaner')
+      const s = localStorage.getItem('setl_regular_cleaner')
       return s ? JSON.parse(s) : null
     } catch {
       return null
     }
   })
+  const [profileCleaner, setProfileCleaner] = useState(null) // cleaner whose profile is open
+  const [profileBack, setProfileBack] = useState('providers') // screen to return to from a profile
+
+  function openProfile(cleaner, from) {
+    setProfileCleaner(cleaner)
+    setProfileBack(from)
+    setScreen('cleanerProfile')
+  }
 
   function toggleFavorite(provider) {
     setFavoriteCleaner((cur) => {
       const next = cur?.id === provider.id ? null : provider
       try {
-        if (next) localStorage.setItem('setl_favorite_cleaner', JSON.stringify(next))
-        else localStorage.removeItem('setl_favorite_cleaner')
+        if (next) localStorage.setItem('setl_regular_cleaner', JSON.stringify(next))
+        else localStorage.removeItem('setl_regular_cleaner')
       } catch {
         // ignore storage errors (private mode, etc.)
       }
@@ -264,8 +273,9 @@ function App() {
     setHours(2)
     setServiceOptions([])
     setFavoriteCleaner(null)
+    setProfileCleaner(null)
     try {
-      localStorage.removeItem('setl_favorite_cleaner')
+      localStorage.removeItem('setl_regular_cleaner')
     } catch {
       // ignore
     }
@@ -379,8 +389,19 @@ function App() {
         favorite={favoriteCleaner}
         onRebook={(provider, date, time) => confirmBooking('cleaning', 'booking')(provider, date, time)}
         onClearFavorite={() => toggleFavorite(favoriteCleaner)}
+        onOpenProfile={(cleaner) => openProfile(cleaner, 'cleaningService')}
         onSearchProviders={() => openProviders('cleaning', 'booking')}
         onBack={() => setScreen('home')}
+      />
+    ),
+    cleanerProfile: profileCleaner && (
+      <CleanerProfileScreen
+        cleaner={profileCleaner}
+        hours={hours}
+        isFavorite={favoriteCleaner?.id === profileCleaner.id}
+        onToggleFavorite={() => toggleFavorite(profileCleaner)}
+        onBook={(cleaner, date, time) => confirmBooking('cleaning', 'booking')(cleaner, date, time)}
+        onBack={() => setScreen(profileBack)}
       />
     ),
     providers: (
@@ -390,6 +411,11 @@ function App() {
         onConfirm={confirmBooking(flow.service, flow.variant, flow.symptoms)}
         favoriteId={favoriteCleaner?.id}
         onToggleFavorite={flow.service === 'cleaning' && flow.variant === 'booking' ? toggleFavorite : undefined}
+        onOpenProfile={
+          flow.service === 'cleaning' && flow.variant === 'booking'
+            ? (cleaner) => openProfile(cleaner, 'providers')
+            : undefined
+        }
         onBack={() =>
           setScreen(
             { ac: 'acService', cleaning: 'cleaningService' }[flow.service] ??
