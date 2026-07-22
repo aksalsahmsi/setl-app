@@ -11,7 +11,7 @@ import { SERVICES } from '../data/providers.js'
 //  - inspection: stepper, inspection fees                        (AC screen 5)
 //    + "inspection first" notice and previous providers if the
 //      service config has them                                   (plumber screen 5)
-export default function ProvidersScreen({ service: serviceId, variant, onConfirm, onBack }) {
+export default function ProvidersScreen({ service: serviceId, variant, onConfirm, onBack, favoriteId, onToggleFavorite }) {
   const service = SERVICES[serviceId]
   const isInspection = variant === 'inspection'
   const [query, setQuery] = useState('')
@@ -66,6 +66,8 @@ export default function ProvidersScreen({ service: serviceId, variant, onConfirm
               priceSuffix={p.perHour ? ' AED/Hr' : ' AED'}
               buttonLabel={isInspection && !service.requiresInspection ? 'Book inspection' : 'Book'}
               onBook={() => setSelected(p)}
+              isFavorite={favoriteId === p.id}
+              onToggleFavorite={onToggleFavorite ? () => onToggleFavorite(p) : undefined}
             />
           ))}
         </div>

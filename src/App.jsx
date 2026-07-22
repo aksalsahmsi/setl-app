@@ -40,6 +40,28 @@ function App() {
   const [counts, setCounts] = useState({ refill: 1, clean: 1 })
   const [hours, setHours] = useState(2) // hourly services (house cleaning)
   const [serviceOptions, setServiceOptions] = useState([]) // jobs picked on the options screen
+  // The customer's regular cleaner — persisted so "default" actually sticks
+  const [favoriteCleaner, setFavoriteCleaner] = useState(() => {
+    try {
+      const s = localStorage.getItem('setl_favorite_cleaner')
+      return s ? JSON.parse(s) : null
+    } catch {
+      return null
+    }
+  })
+
+  function toggleFavorite(provider) {
+    setFavoriteCleaner((cur) => {
+      const next = cur?.id === provider.id ? null : provider
+      try {
+        if (next) localStorage.setItem('setl_favorite_cleaner', JSON.stringify(next))
+        else localStorage.removeItem('setl_favorite_cleaner')
+      } catch {
+        // ignore storage errors (private mode, etc.)
+      }
+      return next
+    })
+  }
   const [flow, setFlow] = useState({ service: 'ac', variant: 'booking' }) // which provider list is open
   const [booking, setBooking] = useState(null) // { provider, date, time, variant, service, ... }
   const [orders, setOrders] = useState([])
@@ -241,6 +263,12 @@ function App() {
     setCounts({ refill: 1, clean: 1 })
     setHours(2)
     setServiceOptions([])
+    setFavoriteCleaner(null)
+    try {
+      localStorage.removeItem('setl_favorite_cleaner')
+    } catch {
+      // ignore
+    }
     setBooking(null)
     setOrders([])
     setSuccessInfo(null)
@@ -348,6 +376,9 @@ function App() {
       <CleaningServiceScreen
         hours={hours}
         setHours={setHours}
+        favorite={favoriteCleaner}
+        onRebook={(provider, date, time) => confirmBooking('cleaning', 'booking')(provider, date, time)}
+        onClearFavorite={() => toggleFavorite(favoriteCleaner)}
         onSearchProviders={() => openProviders('cleaning', 'booking')}
         onBack={() => setScreen('home')}
       />
@@ -357,6 +388,8 @@ function App() {
         service={flow.service}
         variant={flow.variant}
         onConfirm={confirmBooking(flow.service, flow.variant, flow.symptoms)}
+        favoriteId={favoriteCleaner?.id}
+        onToggleFavorite={flow.service === 'cleaning' && flow.variant === 'booking' ? toggleFavorite : undefined}
         onBack={() =>
           setScreen(
             { ac: 'acService', cleaning: 'cleaningService' }[flow.service] ??

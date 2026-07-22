@@ -1,5 +1,23 @@
+function Heart({ filled }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill={filled ? '#8442FF' : 'none'} stroke={filled ? '#8442FF' : '#C2C0C9'} strokeWidth="2">
+      <path d="M12 21s-7-4.5-9.5-9A5 5 0 0 1 12 6a5 5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9Z" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 // White provider card: logo avatar, name, price in AED, yellow rating badge, Book button.
-export default function ProviderCard({ provider, price, priceSuffix = ' AED', buttonLabel = 'Book', onBook }) {
+// When onToggleFavorite is passed (cleaning), a heart lets the customer mark
+// this provider as their regular.
+export default function ProviderCard({
+  provider,
+  price,
+  priceSuffix = ' AED',
+  buttonLabel = 'Book',
+  onBook,
+  isFavorite,
+  onToggleFavorite,
+}) {
   const initials = provider.name
     .split(' ')
     .slice(0, 2)
@@ -43,9 +61,21 @@ export default function ProviderCard({ provider, price, priceSuffix = ' AED', bu
           {buttonLabel}
         </button>
       </div>
-      <span className="self-start rounded-md bg-[#FCD467] px-2.5 py-1 text-sm font-medium text-black">
-        {provider.rating}
-      </span>
+      <div className="flex flex-col items-end gap-2 self-start">
+        {onToggleFavorite && (
+          <button
+            type="button"
+            onClick={onToggleFavorite}
+            aria-label={isFavorite ? 'Remove as regular' : 'Set as my regular'}
+            className="cursor-pointer"
+          >
+            <Heart filled={isFavorite} />
+          </button>
+        )}
+        <span className="rounded-md bg-[#FCD467] px-2.5 py-1 text-sm font-medium text-black">
+          {provider.rating}
+        </span>
+      </div>
     </div>
   )
 }

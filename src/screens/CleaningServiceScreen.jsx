@@ -1,15 +1,64 @@
+import { useState } from 'react'
 import GradientHeader from '../components/GradientHeader.jsx'
 import GradientButton from '../components/GradientButton.jsx'
+import DateTimeSheet from '../components/DateTimeSheet.jsx'
 
 const MIN_HOURS = 1
 const MAX_HOURS = 8
 
 // Hours-needed picker for hourly services (Phase 2, category 1).
 // Providers charge per hour; the total is rate x hours at checkout.
-export default function CleaningServiceScreen({ hours, setHours, onSearchProviders, onBack }) {
+// If the customer has set a regular cleaner, she shows up top for one-tap
+// rebooking (the retention loop — "book your regular").
+export default function CleaningServiceScreen({
+  hours,
+  setHours,
+  favorite,
+  onRebook,
+  onClearFavorite,
+  onSearchProviders,
+  onBack,
+}) {
+  const [rebooking, setRebooking] = useState(false) // date sheet for the regular
+
   return (
     <GradientHeader title="House cleaning" onBack={onBack}>
       <div className="flex grow flex-col px-4 pt-5 pb-6">
+        {/* Your regular cleaner (retention loop) */}
+        {favorite && (
+          <div className="mb-5 rounded-2xl bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
+            <p className="text-xs font-medium text-[#8442FF]">Your regular cleaner</p>
+            <div className="mt-2 flex items-center gap-3">
+              <div
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white"
+                style={{ background: favorite.color }}
+              >
+                {favorite.name[0].toUpperCase()}
+              </div>
+              <div className="min-w-0 grow">
+                <p className="truncate font-semibold text-black">{favorite.name}</p>
+                <p className="text-xs text-gray-400">
+                  ★ {favorite.rating} · {favorite.bookingFee} AED/hr
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={onClearFavorite}
+                className="shrink-0 cursor-pointer text-xs text-gray-400 underline"
+              >
+                Remove
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => setRebooking(true)}
+              className="mt-3 h-11 w-full cursor-pointer rounded-full bg-linear-[270deg,#366EE9_-95.36%,#F15CFA_212.48%] text-sm font-medium text-white active:opacity-90"
+            >
+              Book {favorite.name.split(' ')[0]} again · {hours} {hours === 1 ? 'hr' : 'hrs'}
+            </button>
+          </div>
+        )}
+
         <h2 className="text-2xl font-semibold text-black">How many hours do you need?</h2>
 
         <div className="mt-4 flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4">
@@ -44,8 +93,22 @@ export default function CleaningServiceScreen({ hours, setHours, onSearchProvide
 
         <div className="grow" />
 
-        <GradientButton onClick={onSearchProviders}>Search for providers</GradientButton>
+        <GradientButton onClick={onSearchProviders}>
+          {favorite ? 'See other cleaners' : 'Search for providers'}
+        </GradientButton>
       </div>
+
+      {rebooking && favorite && (
+        <DateTimeSheet
+          provider={favorite}
+          title="Pick a time"
+          onClose={() => setRebooking(false)}
+          onConfirm={({ date, time }) => {
+            onRebook(favorite, date, time)
+            setRebooking(false)
+          }}
+        />
+      )}
     </GradientHeader>
   )
 }
