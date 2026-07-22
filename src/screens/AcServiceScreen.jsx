@@ -63,8 +63,8 @@ export default function AcServiceScreen({ counts, setCounts, onSearchProviders, 
           className="mt-4 w-full cursor-pointer rounded-xl border border-[#8442FF] bg-white py-3 text-center"
         >
           <span className="block text-sm text-[#2790C3]">Not sure what&apos;s wrong?</span>
-          <span className="block text-lg font-medium text-[#8442FF]">Book an inspection</span>
-          <span className="block text-xs text-gray-400">Fee credited toward your repair if you proceed</span>
+          <span className="block text-lg font-medium text-[#8442FF]">Send a pro a photo</span>
+          <span className="block text-xs text-gray-400">Get a ballpark — no visit needed to start</span>
         </button>
       </div>
     </GradientHeader>

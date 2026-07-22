@@ -6,6 +6,7 @@ import HomeScreen from './screens/HomeScreen.jsx'
 import AcServiceScreen from './screens/AcServiceScreen.jsx'
 import CleaningServiceScreen from './screens/CleaningServiceScreen.jsx'
 import ServiceOptionsScreen from './screens/ServiceOptionsScreen.jsx'
+import PhotoTriageScreen from './screens/PhotoTriageScreen.jsx'
 import ProvidersScreen from './screens/ProvidersScreen.jsx'
 import OrderDetailsScreen from './screens/OrderDetailsScreen.jsx'
 import OrderTrackingScreen from './screens/OrderTrackingScreen.jsx'
@@ -98,6 +99,23 @@ function App() {
   function openProviders(service, variant, symptoms) {
     setFlow({ service, variant, symptoms })
     setScreen('providers')
+  }
+
+  // Photo-first triage: the "not sure what's wrong" path. The pro's remote
+  // reply then routes into the normal booking flow for that service.
+  function openTriage(service, symptoms) {
+    setFlow({ service, variant: 'booking', symptoms })
+    setScreen('photoTriage')
+  }
+
+  // Proceed to book the repair for a service (used after triage / the wizard's
+  // "I know the service"): its options screen, the AC screen, or providers.
+  function bookService(service, symptoms) {
+    if (service === 'ac') setScreen('acService')
+    else if (SERVICES[service].options) {
+      setFlow({ service, variant: 'booking', symptoms })
+      setScreen('serviceOptions')
+    } else openProviders(service, 'booking', symptoms)
   }
 
   function confirmBooking(service, variant, symptoms) {
@@ -276,7 +294,7 @@ function App() {
         counts={counts}
         setCounts={setCounts}
         onSearchProviders={() => openProviders('ac', 'booking')}
-        onBookInspection={() => openProviders('ac', 'inspection')}
+        onBookInspection={() => openTriage('ac')}
         onBack={() => setScreen('home')}
       />
     ),
@@ -284,15 +302,22 @@ function App() {
       <WizardScreen
         onBack={() => setScreen('home')}
         onRoute={(service, knowsService, symptoms) => {
-          // "Yes, I know the service" goes to the service's options screen
-          // when it has one; services that require an inspection (plumber)
-          // and every "not sure" answer go straight to inspection providers.
-          if (knowsService && service === 'ac') setScreen('acService')
-          else if (knowsService && SERVICES[service].options) {
-            setFlow({ service, variant: 'booking', symptoms })
-            setScreen('serviceOptions')
-          } else openProviders(service, 'inspection', symptoms)
+          // "Yes, I know the service" → book it. "Not sure" → photo triage,
+          // except services that always require an inspection (plumber),
+          // which go straight to inspection providers.
+          if (knowsService) bookService(service, symptoms)
+          else if (SERVICES[service].requiresInspection)
+            openProviders(service, 'inspection', symptoms)
+          else openTriage(service, symptoms)
         }}
+      />
+    ),
+    photoTriage: (
+      <PhotoTriageScreen
+        serviceKey={flow.service}
+        onBookService={() => bookService(flow.service, flow.symptoms)}
+        onBookInspection={() => openProviders(flow.service, 'inspection', flow.symptoms)}
+        onBack={() => setScreen('home')}
       />
     ),
     serviceOptions: (
@@ -302,7 +327,7 @@ function App() {
           setServiceOptions(selected)
           openProviders(flow.service, 'booking', flow.symptoms)
         }}
-        onBookInspection={() => openProviders(flow.service, 'inspection', flow.symptoms)}
+        onBookInspection={() => openTriage(flow.service, flow.symptoms)}
         onBack={() => setScreen('home')}
       />
     ),
