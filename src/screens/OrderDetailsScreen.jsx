@@ -27,13 +27,19 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack, onR
   // What is being paid for depends on the flow:
   //  - inspection booking -> only the standardized inspection fee
   //  - maintenance        -> the products the inspector proposed (accepted by the customer)
+  //  - direct options     -> call-out fee + the jobs picked on the options screen
   //  - direct hourly      -> the provider's rate x hours needed
   //  - direct AC          -> the selected AC services
   const items = isInspection
     ? [{ label: 'Inspection visit', qty: 1, price: booking.price }]
     : isMaintenance
       ? booking.products.map((p) => ({ label: p.name, qty: p.qty, price: p.price }))
-      : service.pricingModel === 'hourly'
+      : booking.options
+        ? [
+            { label: 'Visit & labor', qty: 1, price: booking.provider.bookingFee },
+            ...booking.options.map((o) => ({ label: o.label, qty: 1, price: o.price })),
+          ]
+        : service.pricingModel === 'hourly'
         ? [
             {
               label: `${service.label} hour (${booking.provider.bookingFee} AED/hr)`,

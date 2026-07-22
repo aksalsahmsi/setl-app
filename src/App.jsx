@@ -5,6 +5,7 @@ import LocationScreen from './screens/LocationScreen.jsx'
 import HomeScreen from './screens/HomeScreen.jsx'
 import AcServiceScreen from './screens/AcServiceScreen.jsx'
 import CleaningServiceScreen from './screens/CleaningServiceScreen.jsx'
+import ServiceOptionsScreen from './screens/ServiceOptionsScreen.jsx'
 import ProvidersScreen from './screens/ProvidersScreen.jsx'
 import OrderDetailsScreen from './screens/OrderDetailsScreen.jsx'
 import OrderTrackingScreen from './screens/OrderTrackingScreen.jsx'
@@ -37,6 +38,7 @@ function App() {
   const [phone, setPhone] = useState('')
   const [counts, setCounts] = useState({ refill: 1, clean: 1 })
   const [hours, setHours] = useState(2) // hourly services (house cleaning)
+  const [serviceOptions, setServiceOptions] = useState([]) // jobs picked on the options screen
   const [flow, setFlow] = useState({ service: 'ac', variant: 'booking' }) // which provider list is open
   const [booking, setBooking] = useState(null) // { provider, date, time, variant, service, ... }
   const [orders, setOrders] = useState([])
@@ -108,6 +110,8 @@ function App() {
         service,
         symptoms,
         hours, // used by hourly services (rate x hours at checkout)
+        // jobs picked for options-based services (checkout adds the call-out fee)
+        options: variant === 'booking' && SERVICES[service].options ? serviceOptions : undefined,
         // Inspection pricing is Setl's, standardized per service (decision B)
         price:
           variant === 'inspection' ? SERVICES[service].standardInspectionFee : provider.bookingFee,
@@ -218,6 +222,7 @@ function App() {
     setPhone('')
     setCounts({ refill: 1, clean: 1 })
     setHours(2)
+    setServiceOptions([])
     setBooking(null)
     setOrders([])
     setSuccessInfo(null)
@@ -244,7 +249,10 @@ function App() {
         onOpenService={(target) => {
           // plumber requires an inspection first, so it goes straight to providers
           if (target === 'plumberProviders') openProviders('plumber', 'inspection')
-          else setScreen(target)
+          else if (target.startsWith('options:')) {
+            setFlow({ service: target.slice('options:'.length), variant: 'booking' })
+            setScreen('serviceOptions')
+          } else setScreen(target)
         }}
       />
     ),
@@ -280,8 +288,22 @@ function App() {
           // when it has one; services that require an inspection (plumber)
           // and every "not sure" answer go straight to inspection providers.
           if (knowsService && service === 'ac') setScreen('acService')
-          else openProviders(service, 'inspection', symptoms)
+          else if (knowsService && SERVICES[service].options) {
+            setFlow({ service, variant: 'booking', symptoms })
+            setScreen('serviceOptions')
+          } else openProviders(service, 'inspection', symptoms)
         }}
+      />
+    ),
+    serviceOptions: (
+      <ServiceOptionsScreen
+        serviceKey={flow.service}
+        onSearchProviders={(selected) => {
+          setServiceOptions(selected)
+          openProviders(flow.service, 'booking', flow.symptoms)
+        }}
+        onBookInspection={() => openProviders(flow.service, 'inspection', flow.symptoms)}
+        onBack={() => setScreen('home')}
       />
     ),
     cleaningService: (
@@ -298,7 +320,10 @@ function App() {
         variant={flow.variant}
         onConfirm={confirmBooking(flow.service, flow.variant, flow.symptoms)}
         onBack={() =>
-          setScreen({ ac: 'acService', cleaning: 'cleaningService' }[flow.service] ?? 'home')
+          setScreen(
+            { ac: 'acService', cleaning: 'cleaningService' }[flow.service] ??
+              (SERVICES[flow.service].options ? 'serviceOptions' : 'home'),
+          )
         }
       />
     ),

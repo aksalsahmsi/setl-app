@@ -3,17 +3,11 @@ import GradientHeader from '../components/GradientHeader.jsx'
 import GradientButton from '../components/GradientButton.jsx'
 import { SERVICES } from '../data/providers.js'
 
-// Areas the wizard offers. Enabled ones map to a SERVICES entry; the rest
-// are visible but disabled so the catalog's ambition shows without breaking
-// MVP discipline (decision G).
-const AREAS = [
-  ...Object.entries(SERVICES)
-    .filter(([, s]) => s.problemArea)
-    .map(([key, s]) => ({ key, label: s.problemArea })),
-  { label: 'Electrical & lighting', soon: true },
-  { label: 'Appliances & devices', soon: true },
-  { label: 'Wi-Fi & network', soon: true },
-]
+// Areas the wizard offers — derived from every SERVICES entry that declares
+// a problemArea (all real, bookable services now).
+const AREAS = Object.entries(SERVICES)
+  .filter(([, s]) => s.problemArea)
+  .map(([key, s]) => ({ key, label: s.problemArea }))
 
 // Symptom-first wizard (decision A): problem area -> symptoms -> "Do you
 // already know the service you need?". Provider choice only comes after.
@@ -43,28 +37,17 @@ export default function WizardScreen({ onRoute, onBack }) {
                 <button
                   key={a.label}
                   type="button"
-                  disabled={a.soon}
                   onClick={() => {
                     setArea(a.key)
                     setSymptoms(new Set())
                     setStep(1)
                   }}
-                  className={`flex items-center justify-between rounded-xl border bg-white p-4 text-left text-[15px] ${
-                    a.soon
-                      ? 'cursor-default border-gray-100 text-gray-300'
-                      : 'cursor-pointer border-gray-200 text-black active:border-[#8442FF]'
-                  }`}
+                  className="flex cursor-pointer items-center justify-between rounded-xl border border-gray-200 bg-white p-4 text-left text-[15px] text-black active:border-[#8442FF]"
                 >
                   {a.label}
-                  {a.soon ? (
-                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] text-gray-400">
-                      Soon
-                    </span>
-                  ) : (
-                    <svg width="8" height="14" viewBox="0 0 10 18" fill="none">
-                      <path d="m1 1 7 8-7 8" stroke="#9C9AA5" strokeWidth="2" strokeLinecap="round" />
-                    </svg>
-                  )}
+                  <svg width="8" height="14" viewBox="0 0 10 18" fill="none">
+                    <path d="m1 1 7 8-7 8" stroke="#9C9AA5" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
                 </button>
               ))}
             </div>

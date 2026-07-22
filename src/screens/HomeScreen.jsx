@@ -1,20 +1,22 @@
 import ScrollRow from '../components/ScrollRow.jsx'
 import acImg from '../assets/ac.png'
 import sinkImg from '../assets/sink.png'
-import washerImg from '../assets/washer.png'
 import electricImg from '../assets/electric.png'
 
+// The real catalog from the FigJam board — every card opens a working flow.
 const HOME_SERVICES = [
   { name: 'AC cleaning & refilling', img: acImg, target: 'acService' },
   { name: 'House cleaning', gradient: 'linear-gradient(135deg,#8442FF,#C05CF7)', target: 'cleaningService' },
   { name: 'Plumber', img: sinkImg, target: 'plumberProviders' },
-  { name: 'Washing machines', img: washerImg },
-  { name: 'Electrical', img: electricImg },
+  { name: 'Electrician', img: electricImg, target: 'options:electrician' },
+  { name: 'Technician', gradient: 'linear-gradient(135deg,#B25B0E,#E8A34C)', target: 'options:technician' },
+  { name: 'Network technician', gradient: 'linear-gradient(135deg,#1D8FC4,#6BD0F0)', target: 'options:network' },
+  { name: 'Curtains', gradient: 'linear-gradient(135deg,#B23A0E,#E88B4C)', target: 'options:curtains' },
+  { name: 'Outdoor furniture', gradient: 'linear-gradient(135deg,#3A7D2C,#8FC46B)', target: 'options:outdoor' },
 ]
 
 const CAR_SERVICES = [
-  { name: 'car wash', gradient: 'linear-gradient(135deg,#4B5A68,#1D242B)' },
-  { name: 'window shading', gradient: 'linear-gradient(135deg,#33556E,#101C26)' },
+  { name: 'car wash', gradient: 'linear-gradient(135deg,#4B5A68,#1D242B)', target: 'options:carwash' },
 ]
 
 function ServiceCard({ service, onClick }) {
@@ -157,7 +159,11 @@ export default function HomeScreen({ onOpenService }) {
           <h2 className="text-xl font-semibold text-black">Car services</h2>
           <ScrollRow className="mt-3">
             {CAR_SERVICES.map((s) => (
-              <ServiceCard key={s.name} service={s} />
+              <ServiceCard
+                key={s.name}
+                service={s}
+                onClick={s.target ? () => onOpenService(s.target) : undefined}
+              />
             ))}
           </ScrollRow>
         </section>

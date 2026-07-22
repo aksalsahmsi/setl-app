@@ -38,6 +38,42 @@ export const CLEANING_PROVIDERS = [
   { id: 'cl3', name: 'CleanCo Services', bookingFee: 22, rating: 4.5, color: '#E0442B', perHour: true, slots: ['Tomorrow 10:00am', 'Tomorrow 12:30pm', 'Tomorrow 5:00pm'] },
 ]
 
+// Providers for the rest of the catalog (FigJam board): bookingFee is the
+// call-out / visit charge shown on the card; selected job options are added
+// on top at checkout.
+export const TECH_PROVIDERS = [
+  { id: 'tc1', name: 'FixIt Technicians', bookingFee: 40, rating: 4.6, color: '#B25B0E', perVisit: true, slots: ['Today 2:30pm', 'Today 6:00pm', 'Tomorrow 10:00am'] },
+  { id: 'tc2', name: 'HomeGenie Tech', bookingFee: 35, rating: 4.8, color: '#0E5BB2', perVisit: true, slots: ['Tomorrow 9:00am', 'Tomorrow 1:30pm', 'Tomorrow 6:30pm'] },
+  { id: 'tc3', name: 'Repair Hub UAE', bookingFee: 45, rating: 4.4, color: '#5B0EB2', perVisit: true, slots: ['Today 4:45pm', 'Tomorrow 11:15am', 'Tomorrow 3:00pm'] },
+]
+
+export const ELECTRICIAN_PROVIDERS = [
+  { id: 'el1', name: 'PowerPro Electric', bookingFee: 40, rating: 4.7, color: '#C4A21D', perVisit: true, slots: ['Today 3:15pm', 'Today 7:30pm', 'Tomorrow 9:30am'] },
+  { id: 'el2', name: 'Al Noor Electrical', bookingFee: 30, rating: 4.9, color: '#1DC46B', perVisit: true, slots: ['Tomorrow 8:00am', 'Tomorrow 12:00pm', 'Tomorrow 4:00pm'] },
+  { id: 'el3', name: 'Spark Masters', bookingFee: 50, rating: 4.5, color: '#C41D50', perVisit: true, slots: ['Today 5:00pm', 'Tomorrow 10:45am', 'Tomorrow 2:30pm'] },
+]
+
+export const NETWORK_PROVIDERS = [
+  { id: 'nw1', name: 'NetBoost UAE', bookingFee: 35, rating: 4.6, color: '#1D8FC4', perVisit: true, slots: ['Today 1:00pm', 'Today 5:15pm', 'Tomorrow 9:00am'] },
+  { id: 'nw2', name: 'WiFi Doctors', bookingFee: 30, rating: 4.8, color: '#7C3AED', perVisit: true, slots: ['Tomorrow 10:00am', 'Tomorrow 2:00pm', 'Tomorrow 6:00pm'] },
+]
+
+export const CURTAIN_PROVIDERS = [
+  { id: 'cu1', name: 'Emirates Curtains', bookingFee: 30, rating: 4.7, color: '#B23A0E', perVisit: true, slots: ['Today 4:30pm', 'Tomorrow 11:00am', 'Tomorrow 5:00pm'] },
+  { id: 'cu2', name: 'Drape & Shade Co', bookingFee: 25, rating: 4.5, color: '#0EA5B2', perVisit: true, slots: ['Tomorrow 9:30am', 'Tomorrow 1:00pm', 'Tomorrow 4:45pm'] },
+]
+
+export const OUTDOOR_PROVIDERS = [
+  { id: 'of1', name: 'Patio Pros', bookingFee: 35, rating: 4.6, color: '#3A7D2C', perVisit: true, slots: ['Today 3:00pm', 'Tomorrow 10:30am', 'Tomorrow 3:30pm'] },
+  { id: 'of2', name: 'Desert Breeze Outdoor', bookingFee: 40, rating: 4.4, color: '#8A5A2B', perVisit: true, slots: ['Tomorrow 8:30am', 'Tomorrow 12:30pm', 'Tomorrow 5:30pm'] },
+]
+
+export const CARWASH_PROVIDERS = [
+  { id: 'cw1', name: 'Shiny Mobile Wash', bookingFee: 20, rating: 4.8, color: '#1D50C4', perVisit: true, slots: ['Today 1:30pm', 'Today 5:45pm', 'Tomorrow 9:15am'] },
+  { id: 'cw2', name: 'EcoWash UAE', bookingFee: 15, rating: 4.6, color: '#1DC4A2', perVisit: true, slots: ['Today 3:45pm', 'Tomorrow 10:15am', 'Tomorrow 2:15pm'] },
+  { id: 'cw3', name: 'Desert Shine', bookingFee: 25, rating: 4.7, color: '#C47A1D', perVisit: true, slots: ['Tomorrow 8:45am', 'Tomorrow 1:45pm', 'Tomorrow 6:45pm'] },
+]
+
 export const PREVIOUS_PROVIDERS = [
   { id: 'pp1', name: 'AAA', color: '#0FA3C4' },
   { id: 'pp2', name: 'UltraTec', color: '#2E9E4F' },
@@ -45,12 +81,42 @@ export const PREVIOUS_PROVIDERS = [
 ]
 
 // What the inspector proposes after the visit, per service.
-// market = fair market price range shown to the customer for transparency.
+// market = typical range from recent Setl jobs, shown for transparency.
 export function getInspectionProducts(service, counts) {
   if (service === 'plumber') {
     return [
       { name: 'Faucet', qty: 2, price: 50, market: [30, 50], icon: 'faucet' },
       { name: 'Pipe', qty: 1, price: 20, market: [25, 30], icon: 'pipe' },
+    ]
+  }
+  if (service === 'electrician') {
+    return [
+      { name: 'Wiring repair', qty: 1, price: 120, market: [90, 140] },
+      { name: 'Breaker replacement', qty: 1, price: 80, market: [60, 90] },
+    ]
+  }
+  if (service === 'technician') {
+    return [
+      { name: 'Spare part', qty: 1, price: 150, market: [120, 180] },
+      { name: 'Repair labor', qty: 1, price: 100, market: [80, 120] },
+    ]
+  }
+  if (service === 'network') {
+    return [
+      { name: 'Router replacement', qty: 1, price: 180, market: [150, 220] },
+      { name: 'Wi-Fi extender', qty: 1, price: 120, market: [100, 150] },
+    ]
+  }
+  if (service === 'curtains') {
+    return [
+      { name: 'Track replacement', qty: 1, price: 90, market: [70, 110] },
+      { name: 'Motor repair', qty: 1, price: 150, market: [120, 200] },
+    ]
+  }
+  if (service === 'outdoor') {
+    return [
+      { name: 'Frame parts', qty: 1, price: 110, market: [90, 140] },
+      { name: 'Repair labor', qty: 1, price: 120, market: [100, 150] },
     ]
   }
   const refill = counts?.refill || 1
@@ -117,6 +183,115 @@ export const SERVICES = {
     pricingModel: 'hourly',
     bookingSheetTitle: 'House cleaning',
     listTitle: { booking: 'Cleaning providers' },
+  },
+  // The rest of the board's category-2 services: `options` = jobs the
+  // customer can pick when they know what they need (priced on top of the
+  // provider's call-out fee); the inspection path covers "not sure".
+  technician: {
+    label: 'Technician',
+    inspectionLabel: 'Technician inspection',
+    maintenanceLabel: 'Technician service',
+    providers: TECH_PROVIDERS,
+    requiresInspection: false,
+    pricingModel: 'fixed',
+    standardInspectionFee: 25,
+    problemArea: 'Appliances & devices',
+    symptoms: ['Appliance not turning on', 'TV or screen issue', 'Device needs setup', 'Strange noise or smell', 'Something else'],
+    options: [
+      { label: 'TV mounting', price: 80 },
+      { label: 'Router / device setup', price: 60 },
+      { label: 'Smart home device installation', price: 90 },
+      { label: 'Appliance check & minor fix', price: 100 },
+    ],
+    bookingSheetTitle: 'Technician visit',
+    listTitle: { booking: 'Technicians', inspection: 'Inspection options' },
+  },
+  electrician: {
+    label: 'Electrician',
+    inspectionLabel: 'Electrical inspection',
+    maintenanceLabel: 'Electrical service',
+    providers: ELECTRICIAN_PROVIDERS,
+    requiresInspection: false,
+    pricingModel: 'fixed',
+    standardInspectionFee: 25,
+    problemArea: 'Electrical & lighting',
+    symptoms: ['Power outage in a room', 'Breaker keeps tripping', 'Light not working', 'Sparking or burning smell', 'New fixture needed'],
+    options: [
+      { label: 'Light fixture installation', price: 60 },
+      { label: 'Socket or switch replacement', price: 40 },
+      { label: 'Ceiling fan installation', price: 90 },
+      { label: 'Chandelier installation', price: 150 },
+    ],
+    bookingSheetTitle: 'Electrician visit',
+    listTitle: { booking: 'Electricians', inspection: 'Inspection options' },
+  },
+  network: {
+    label: 'Network technician',
+    inspectionLabel: 'Network inspection',
+    maintenanceLabel: 'Network service',
+    providers: NETWORK_PROVIDERS,
+    requiresInspection: false,
+    pricingModel: 'fixed',
+    standardInspectionFee: 20,
+    problemArea: 'Wi-Fi & network',
+    symptoms: ['Slow internet', 'Weak signal in some rooms', 'Frequent disconnections', 'New router to set up'],
+    options: [
+      { label: 'Wi-Fi optimization', price: 100 },
+      { label: 'Coverage extension (extender setup)', price: 120 },
+      { label: 'New router installation', price: 80 },
+    ],
+    bookingSheetTitle: 'Network visit',
+    listTitle: { booking: 'Network technicians', inspection: 'Inspection options' },
+  },
+  curtains: {
+    label: 'Curtains',
+    inspectionLabel: 'Curtains inspection',
+    maintenanceLabel: 'Curtains service',
+    providers: CURTAIN_PROVIDERS,
+    requiresInspection: false,
+    pricingModel: 'fixed',
+    standardInspectionFee: 20,
+    problemArea: 'Curtains & blinds',
+    symptoms: ['Curtain motor stuck', 'Track broken or loose', 'New curtains to install', 'Blinds not closing'],
+    options: [
+      { label: 'Curtain installation (per window)', price: 50 },
+      { label: 'Blinds installation (per window)', price: 60 },
+      { label: 'Curtain motor setup', price: 150 },
+    ],
+    bookingSheetTitle: 'Curtains visit',
+    listTitle: { booking: 'Curtain fitters', inspection: 'Inspection options' },
+  },
+  outdoor: {
+    label: 'Outdoor furniture',
+    inspectionLabel: 'Outdoor furniture inspection',
+    maintenanceLabel: 'Outdoor furniture service',
+    providers: OUTDOOR_PROVIDERS,
+    requiresInspection: false,
+    pricingModel: 'fixed',
+    standardInspectionFee: 20,
+    options: [
+      { label: 'Furniture assembly (per item)', price: 70 },
+      { label: 'Swing / gazebo assembly', price: 180 },
+      { label: 'Furniture repair', price: 90 },
+    ],
+    bookingSheetTitle: 'Outdoor furniture visit',
+    listTitle: { booking: 'Outdoor specialists', inspection: 'Inspection options' },
+  },
+  // Category 1: direct booking per visit, no inspection
+  carwash: {
+    label: 'Car wash',
+    maintenanceLabel: 'Car wash',
+    providers: CARWASH_PROVIDERS,
+    requiresInspection: false,
+    pricingModel: 'fixed',
+    options: [
+      { label: 'Sedan wash', price: 30 },
+      { label: 'SUV wash', price: 45 },
+      { label: 'Interior deep clean', price: 80 },
+      { label: 'Full detail', price: 150 },
+    ],
+    bookingSheetTitle: 'Car wash',
+    listTitle: { booking: 'Car wash providers' },
   },
 }
 
