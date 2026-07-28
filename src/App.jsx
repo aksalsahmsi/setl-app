@@ -17,9 +17,6 @@ import SuccessScreen from './screens/SuccessScreen.jsx'
 import OrdersScreen from './screens/OrdersScreen.jsx'
 import ProfileScreen from './screens/ProfileScreen.jsx'
 import ChooseServiceScreen from './screens/provider/ChooseServiceScreen.jsx'
-import CoverageScreen from './screens/provider/CoverageScreen.jsx'
-import TimeSlotsScreen from './screens/provider/TimeSlotsScreen.jsx'
-import ProviderDoneScreen from './screens/provider/ProviderDoneScreen.jsx'
 import ProviderHomeScreen from './screens/provider/ProviderHomeScreen.jsx'
 import ProviderOrderScreen from './screens/provider/ProviderOrderScreen.jsx'
 import ProviderNavigateScreen from './screens/provider/ProviderNavigateScreen.jsx'
@@ -86,8 +83,8 @@ function loadCompany() {
 //   ... work done (simulated) -> Orders "Awaiting payment" -> final invoice -> paid
 //   Inspection: fee prepaid at checkout -> tracking (estimate arrives) ->
 //   approve (confirm repair, 0 due) / reject (reason) -> same invoice path
-// Provider flow (onboarding):
-//   login -> otp -> chooseService -> coverage -> timeSlots -> done
+// Worker (provider) app: login -> otp -> providerHome (the SP configures the
+// worker, so there's no separate worker self-onboarding).
 function App() {
   const [mode, setMode] = useState('customer') // 'customer' | 'provider'
   const [screen, setScreen] = useState('login')
@@ -133,7 +130,6 @@ function App() {
   const [spEmpIndex, setSpEmpIndex] = useState(0) // per-employee onboarding cursor
   const [successInfo, setSuccessInfo] = useState(null) // { variant, total, credit } for SuccessScreen
   const [payingOrderId, setPayingOrderId] = useState(null) // order open on the invoice screen
-  const [providerProfile, setProviderProfile] = useState({ services: [], range: 15, slots: null })
   const [toast, setToast] = useState(null) // simulated push notification { key, text }
   const workTimers = useRef(new Set()) // `${orderId}:${state}` steps already scheduled
 
@@ -477,7 +473,6 @@ function App() {
     setSuccessInfo(null)
     setPayingOrderId(null)
     workTimers.current = new Set()
-    setProviderProfile({ services: [], range: 15, slots: null })
   }
 
   const screens = {
@@ -690,41 +685,6 @@ function App() {
         {...(successInfo ?? {})}
         onDone={() => setScreen('home')}
         onTrack={() => setScreen('tracking')}
-      />
-    ),
-    // Provider onboarding
-    chooseService: (
-      <ChooseServiceScreen
-        onConfirm={(services) => {
-          setProviderProfile({ ...providerProfile, services })
-          setScreen('coverage')
-        }}
-        onBack={() => setScreen('otp')}
-      />
-    ),
-    coverage: (
-      <CoverageScreen
-        onConfirm={(range) => {
-          setProviderProfile((p) => ({ ...p, range }))
-          setScreen('timeSlots')
-        }}
-        onBack={() => setScreen('chooseService')}
-      />
-    ),
-    timeSlots: (
-      <TimeSlotsScreen
-        onConfirm={(slots) => {
-          setProviderProfile((p) => ({ ...p, slots }))
-          setScreen('providerDone')
-        }}
-        onBack={() => setScreen('coverage')}
-      />
-    ),
-    providerDone: (
-      <ProviderDoneScreen
-        services={providerProfile.services}
-        range={providerProfile.range}
-        onDone={() => setScreen('providerHome')}
       />
     ),
     // Provider (worker) app
