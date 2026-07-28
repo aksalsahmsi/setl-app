@@ -771,6 +771,7 @@ function App() {
         title={company.services?.[0] ?? 'Employees'}
         employees={company.employees}
         onAdd={(emp) => setCompany((c) => ({ ...c, employees: [...c.employees, emp] }))}
+        onUpdate={(id, patch) => setCompany((c) => ({ ...c, employees: c.employees.map((e) => (e.id === id ? { ...e, ...patch } : e)) }))}
         onRemove={(id) => setCompany((c) => ({ ...c, employees: c.employees.filter((e) => e.id !== id) }))}
         onContinue={() => {
           setSpEmpIndex(0)
@@ -869,6 +870,7 @@ function App() {
         manage
         employees={company.employees}
         onAdd={(emp) => setCompany((c) => ({ ...c, employees: [...c.employees, emp] }))}
+        onUpdate={(id, patch) => setCompany((c) => ({ ...c, employees: c.employees.map((e) => (e.id === id ? { ...e, ...patch } : e)) }))}
         onRemove={(id) => setCompany((c) => ({ ...c, employees: c.employees.filter((e) => e.id !== id) }))}
         onContinue={() => setScreen('spHome')}
         onBack={() => setScreen('spHome')}
