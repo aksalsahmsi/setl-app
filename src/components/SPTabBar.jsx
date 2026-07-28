@@ -1,8 +1,8 @@
 const TABS = [
-  { id: 'spHome', label: 'home' },
-  { id: 'spServices', label: 'services' },
-  { id: 'spNotifications', label: 'notifications' },
-  { id: 'spAccount', label: 'account' },
+  { id: 'spHome', label: 'Home' },
+  { id: 'spServices', label: 'Services' },
+  { id: 'spNotifications', label: 'Notifications' },
+  { id: 'spAccount', label: 'Account' },
 ]
 
 function TabIcon({ id, active }) {
