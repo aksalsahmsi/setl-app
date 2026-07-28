@@ -32,6 +32,7 @@ import SPProfileScreen from './screens/sp/SPProfileScreen.jsx'
 import SPDoneScreen from './screens/sp/SPDoneScreen.jsx'
 import SPHomeScreen from './screens/sp/SPHomeScreen.jsx'
 import SPRequestsScreen from './screens/sp/SPRequestsScreen.jsx'
+import SPRequestDetailScreen from './screens/sp/SPRequestDetailScreen.jsx'
 import SPServicesScreen from './screens/sp/SPServicesScreen.jsx'
 import SPNotificationsScreen from './screens/sp/SPNotificationsScreen.jsx'
 import SPAccountScreen from './screens/sp/SPAccountScreen.jsx'
@@ -127,6 +128,8 @@ function App() {
   const [workerOrderId, setWorkerOrderId] = useState(null) // job the worker has open
   const [company, setCompany] = useState(loadCompany) // Service Provider company
   const [spEmpIndex, setSpEmpIndex] = useState(0) // per-employee onboarding cursor
+  const [spDetailId, setSpDetailId] = useState(null) // SP request open on the detail screen
+  const [spDetailBack, setSpDetailBack] = useState('spExistingRequests') // list to return to
   const [successInfo, setSuccessInfo] = useState(null) // { variant, total, credit } for SuccessScreen
   const [payingOrderId, setPayingOrderId] = useState(null) // order open on the invoice screen
   const [toast, setToast] = useState(null) // simulated push notification { key, text }
@@ -448,6 +451,13 @@ function App() {
   function assignJob(orderId, employee) {
     updateOrder(orderId, (o) => ({ ...o, assignedTo: employee.id, assignedName: employee.name, autopilot: false }))
     notify(`Assigned to ${employee.name}`)
+  }
+
+  // Open a request on the SP detail screen, remembering which list to return to.
+  function openSpDetail(order, from) {
+    setSpDetailId(order.id)
+    setSpDetailBack(from)
+    setScreen('spRequestDetail')
   }
 
   function logout() {
@@ -812,8 +822,7 @@ function App() {
         title="Existing requests"
         heading="Active jobs"
         orders={spActive}
-        employees={company.employees}
-        onAssign={assignJob}
+        onOpen={(o) => openSpDetail(o, 'spExistingRequests')}
         onBack={() => setScreen('spHome')}
       />
     ),
@@ -822,9 +831,16 @@ function App() {
         title="Previous requests"
         heading="Completed"
         orders={spPrevious}
+        onOpen={(o) => openSpDetail(o, 'spPreviousRequests')}
+        onBack={() => setScreen('spHome')}
+      />
+    ),
+    spRequestDetail: (
+      <SPRequestDetailScreen
+        order={orders.find((o) => o.id === spDetailId) ?? null}
         employees={company.employees}
         onAssign={assignJob}
-        onBack={() => setScreen('spHome')}
+        onBack={() => setScreen(spDetailBack)}
       />
     ),
     spServices: <SPServicesScreen company={company} onBack={() => setScreen('spHome')} />,

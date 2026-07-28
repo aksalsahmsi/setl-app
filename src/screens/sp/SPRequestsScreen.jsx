@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { statusLabel } from '../../data/orders.js'
 
 function orderNo(o) {
@@ -20,11 +19,9 @@ const STATUS_STYLE = {
 }
 
 // Service Provider's request lists (mockup "Existing requests" / "Previous
-// requests"). Incoming unassigned jobs get an Assign action; assigned jobs
-// show who's on them and the live status.
-export default function SPRequestsScreen({ title, heading, orders, employees, onAssign, onBack }) {
-  const [assigning, setAssigning] = useState(null)
-
+// requests"). Each card opens the request detail, where the dispatcher sees
+// the customer + location and assigns a worker.
+export default function SPRequestsScreen({ title, heading, orders, onOpen, onBack }) {
   return (
     <div className="font-poppins min-h-screen bg-[#F5F4F7] pb-24">
       <div className="relative bg-linear-[90deg,#C05CF7,#8442FF] px-4 pt-5 pb-5">
@@ -45,7 +42,12 @@ export default function SPRequestsScreen({ title, heading, orders, employees, on
             {orders.map((o) => {
               const unassigned = o.state === 'scheduled' && !o.assignedName
               return (
-                <div key={o.id} className="rounded-2xl bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                <button
+                  key={o.id}
+                  type="button"
+                  onClick={() => onOpen(o)}
+                  className="w-full rounded-2xl bg-white p-4 text-left shadow-[0_2px_8px_rgba(0,0,0,0.06)] active:bg-gray-50"
+                >
                   <div className="flex items-center justify-between text-xs text-gray-400">
                     <span>{o.time}</span>
                     <span>{o.date.day} {o.date.num}</span>
@@ -59,45 +61,21 @@ export default function SPRequestsScreen({ title, heading, orders, employees, on
                     </div>
                     <div className="flex flex-col items-end gap-1.5">
                       {o.flowType === 'inspection' && <span className="rounded-full bg-[#8442FF] px-2.5 py-0.5 text-[11px] font-medium text-white">Inspection</span>}
-                      {!unassigned && <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${STATUS_STYLE[statusLabel(o.state)] ?? 'bg-gray-100 text-gray-500'}`}>{statusLabel(o.state)}</span>}
+                      <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${unassigned ? 'bg-orange-50 text-orange-500' : STATUS_STYLE[statusLabel(o.state)] ?? 'bg-gray-100 text-gray-500'}`}>
+                        {unassigned ? 'Needs a worker' : statusLabel(o.state)}
+                      </span>
                     </div>
                   </div>
-                  {unassigned && (
-                    <button
-                      type="button"
-                      onClick={() => setAssigning(o)}
-                      disabled={employees.length === 0}
-                      className="mt-3 h-10 w-full cursor-pointer rounded-full bg-linear-[270deg,#366EE9_-95.36%,#F15CFA_212.48%] text-sm font-medium text-white active:opacity-90 disabled:opacity-40"
-                    >
-                      {employees.length === 0 ? 'Add employees to assign' : 'Assign to a worker'}
-                    </button>
-                  )}
-                </div>
+                  <div className="mt-3 flex items-center justify-end gap-1 border-t border-gray-100 pt-2.5 text-xs font-medium text-[#8442FF]">
+                    {unassigned ? 'View & assign' : 'View details'}
+                    <svg width="6" height="10" viewBox="0 0 10 18" fill="none"><path d="m1 1 7 8-7 8" stroke="#8442FF" strokeWidth="2.5" strokeLinecap="round" /></svg>
+                  </div>
+                </button>
               )
             })}
           </div>
         )}
       </div>
-
-      {assigning && (
-        <div className="fixed inset-0 z-30 flex items-end bg-black/40" onClick={() => setAssigning(null)}>
-          <div className="w-full rounded-t-3xl bg-white p-5 pb-8" onClick={(e) => e.stopPropagation()}>
-            <h3 className="mb-1 text-lg font-semibold text-black">Assign {assigning.service}</h3>
-            <p className="mb-3 text-xs text-gray-400">Pick a worker to send this job to.</p>
-            <div className="flex flex-col gap-2">
-              {employees.map((e) => (
-                <button key={e.id} type="button" onClick={() => { onAssign(assigning.id, e); setAssigning(null) }} className="flex w-full cursor-pointer items-center gap-3 rounded-xl border border-gray-200 p-3 text-left active:bg-gray-50">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold text-white" style={{ background: e.color }}>{e.name[0].toUpperCase()}</div>
-                  <div>
-                    <p className="text-sm font-medium text-black">{e.name}</p>
-                    <p className="text-xs text-gray-400">{e.role} · {e.coverage ?? 15} KM</p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

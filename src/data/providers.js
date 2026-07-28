@@ -440,6 +440,63 @@ export const CATEGORY_TASKS = [
 // Days offered in the schedule From/To dropdowns.
 export const SCHEDULE_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
+// ---- Dispatch matching (SP assign) ----
+// The SP collects each worker's coverage radius + weekly schedule in
+// onboarding; these helpers put that data to work when assigning a job.
+
+const DAY_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+
+// There's no real geolocation in the demo, so derive a stable "distance from
+// base" for a job from its id (the worker's navigate screen shows the same).
+export function jobDistanceKm(order) {
+  return 6 + ((order?.id ?? 0) % 10)
+}
+
+// Resolve a booking date label ('Today' / 'Tomorrow' / a weekday) to the
+// actual weekday name, so it can be matched against a worker's schedule.
+export function jobWeekday(order) {
+  const label = order?.date?.day
+  if (label && DAY_ORDER.includes(label)) return label
+  const d = new Date()
+  if (label === 'Tomorrow') d.setDate(d.getDate() + 1)
+  return ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][d.getDay()]
+}
+
+// Does a worker's weekly schedule include the given weekday? A worker with no
+// schedule set is treated as flexible (available).
+function scheduleCoversDay(schedule, weekday) {
+  if (!schedule?.length) return true
+  const wi = DAY_ORDER.indexOf(weekday)
+  return schedule.some((b) => {
+    const fi = DAY_ORDER.indexOf(b.from)
+    const ti = DAY_ORDER.indexOf(b.to)
+    return fi >= 0 && ti >= 0 && fi <= wi && wi <= ti
+  })
+}
+
+// Annotate a company's workers for a specific job — who covers the area and
+// is on shift that day — and rank the best matches first.
+export function rankWorkersForJob(employees, order) {
+  const distanceKm = jobDistanceKm(order)
+  const weekday = jobWeekday(order)
+  return employees
+    .map((e) => {
+      const coverage = e.coverage ?? 15
+      const inRange = coverage >= distanceKm
+      const available = scheduleCoversDay(e.schedule, weekday)
+      return {
+        ...e,
+        coverage,
+        distanceKm,
+        weekday,
+        inRange,
+        available,
+        score: (inRange ? 2 : 0) + (available ? 1 : 0),
+      }
+    })
+    .sort((a, b) => b.score - a.score)
+}
+
 // A fresh employee's default weekly schedule (matches the mockup defaults).
 export function defaultSchedule() {
   return [
