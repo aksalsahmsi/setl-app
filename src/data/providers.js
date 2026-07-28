@@ -116,12 +116,6 @@ export const CARWASH_PROVIDERS = [
   { id: 'cw3', name: 'Desert Shine', bookingFee: 25, rating: 4.7, color: '#C47A1D', perVisit: true, slots: ['Tomorrow 8:45am', 'Tomorrow 1:45pm', 'Tomorrow 6:45pm'] },
 ]
 
-export const PREVIOUS_PROVIDERS = [
-  { id: 'pp1', name: 'AAA', color: '#0FA3C4' },
-  { id: 'pp2', name: 'UltraTec', color: '#2E9E4F' },
-  { id: 'pp3', name: 'We will fix it', color: '#D9B80E' },
-]
-
 // What the inspector proposes after the visit, per service.
 // market = typical range from recent Setl jobs, shown for transparency.
 export function getInspectionProducts(service, counts) {
@@ -212,7 +206,6 @@ export const SERVICES = {
     standardInspectionFee: 20,
     problemArea: 'Plumbing & water',
     symptoms: ['Leak or dripping', 'Blocked drain', 'Low water pressure', 'No hot water', 'Bad smell from drain'],
-    previousProviders: PREVIOUS_PROVIDERS,
     listTitle: { inspection: 'Plumber' },
   },
   // Category 1: hourly, booked directly, no inspection offered (so no

@@ -72,27 +72,6 @@ export default function ProvidersScreen({ service: serviceId, variant, onConfirm
             />
           ))}
         </div>
-
-        {service.previousProviders && (
-          <>
-            <h2 className="px-4 pt-2 text-lg font-semibold text-black">Previous Providers</h2>
-            <div className="no-scrollbar flex gap-3 overflow-x-auto px-3 pt-3 pb-8">
-              {service.previousProviders.map((p) => (
-                <div
-                  key={p.id}
-                  className="flex h-28 w-28 shrink-0 items-center justify-center rounded-2xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
-                >
-                  <div
-                    className="flex h-16 w-16 items-center justify-center rounded-full text-lg font-bold text-white"
-                    style={{ background: p.color }}
-                  >
-                    {p.name[0].toUpperCase()}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
       </GradientHeader>
 
       {selected && (

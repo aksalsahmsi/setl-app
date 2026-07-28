@@ -1,4 +1,5 @@
 import ScrollRow from '../components/ScrollRow.jsx'
+import { CUSTOMER_ME } from '../data/providers.js'
 import acImg from '../assets/ac.png'
 import sinkImg from '../assets/sink.png'
 import electricImg from '../assets/electric.png'
@@ -37,34 +38,6 @@ function ServiceCard({ service, onClick }) {
   )
 }
 
-function Stars({ value = 3 }) {
-  return (
-    <span className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <svg key={i} width="13" height="13" viewBox="0 0 24 24" fill={i <= value ? '#F5A623' : '#D7D7D7'}>
-          <path d="m12 2 3 6.6 7 .7-5.2 4.8 1.5 7L12 17.5 5.7 21l1.5-7L2 9.3l7-.7L12 2Z" />
-        </svg>
-      ))}
-    </span>
-  )
-}
-
-function CarShopCard() {
-  return (
-    <div className="w-56 shrink-0 rounded-xl bg-white p-3 shadow-[0_2px_8px_rgba(0,0,0,0.08)]">
-      <p className="font-medium whitespace-nowrap text-black">Take care of your car</p>
-      <div className="mt-1 flex items-center gap-1 text-xs whitespace-nowrap text-gray-500">
-        <Stars value={3} />
-        <span className="font-semibold text-black">3.0</span>
-        <span>(80 Reviews)</span>
-      </div>
-      <p className="mt-2 w-fit rounded bg-[#E5D9FB] px-2 py-1 text-xs whitespace-nowrap text-[#8442FF]">
-        Available Today at 10.00 Am
-      </p>
-    </div>
-  )
-}
-
 export default function HomeScreen({ onOpenService }) {
   return (
     <div className="font-poppins flex min-h-screen flex-col bg-[#F2F1F4]">
@@ -82,7 +55,7 @@ export default function HomeScreen({ onOpenService }) {
               <path d="M9 1a7 7 0 0 1 7 7c0 5-7 12.5-7 12.5S2 13 2 8a7 7 0 0 1 7-7Z" />
               <circle cx="9" cy="8" r="2.5" />
             </svg>
-            Abu salem .doubi
+            {CUSTOMER_ME.area}
             <svg width="12" height="8" viewBox="0 0 12 8" fill="#fff"><path d="M6 8 0 0h12L6 8Z" /></svg>
           </button>
           <button type="button" aria-label="Notifications" className="relative cursor-pointer p-1">
@@ -165,16 +138,6 @@ export default function HomeScreen({ onOpenService }) {
                 onClick={s.target ? () => onOpenService(s.target) : undefined}
               />
             ))}
-          </ScrollRow>
-        </section>
-
-        {/* Best car wash shops */}
-        <section className="mt-5 rounded-2xl bg-white p-4">
-          <h2 className="text-xl font-semibold text-black">Best car wash shops</h2>
-          <ScrollRow className="mt-3">
-            <CarShopCard />
-            <CarShopCard />
-            <CarShopCard />
           </ScrollRow>
         </section>
       </div>

@@ -78,13 +78,6 @@ export default function WizardScreen({ onRoute, onBack }) {
             </div>
             <div className="grow" />
             <GradientButton onClick={() => setStep(2)}>Continue</GradientButton>
-            <button
-              type="button"
-              onClick={() => setStep(2)}
-              className="mt-3 cursor-pointer text-center text-sm text-gray-400 underline"
-            >
-              Skip — not sure what to pick
-            </button>
           </>
         )}
 
