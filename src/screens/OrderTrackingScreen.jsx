@@ -195,7 +195,7 @@ export default function OrderTrackingScreen({ booking, order, counts, onProceedT
 
       {/* Ask-a-question sheet */}
       {asking && (
-        <div className="fixed inset-0 z-20 flex items-end bg-black/40" onClick={() => setAsking(false)}>
+        <div className="fixed inset-0 z-20 mx-auto flex w-full max-w-[375px] items-end bg-black/40" onClick={() => setAsking(false)}>
           <div
             className="w-full rounded-t-3xl bg-white p-5 pb-8"
             onClick={(e) => e.stopPropagation()}

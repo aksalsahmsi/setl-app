@@ -80,7 +80,7 @@ export default function SPEmployeesScreen({ title, employees, onAdd, onRemove, o
 
       {/* Add employee sheet */}
       {adding && (
-        <div className="fixed inset-0 z-30 flex items-end bg-black/40" onClick={() => setAdding(false)}>
+        <div className="fixed inset-0 z-30 mx-auto flex w-full max-w-[375px] items-end bg-black/40" onClick={() => setAdding(false)}>
           <div className="w-full rounded-t-3xl bg-white p-5 pb-8" onClick={(ev) => ev.stopPropagation()}>
             <h3 className="mb-3 text-lg font-semibold text-black">Add employee</h3>
             <input
