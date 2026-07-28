@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import GradientHeader from '../components/GradientHeader.jsx'
 import GradientButton from '../components/GradientButton.jsx'
 import AppointmentCard from '../components/AppointmentCard.jsx'
 import ProgressSteps from '../components/ProgressSteps.jsx'
@@ -21,22 +22,9 @@ export default function InvoiceScreen({ order, onPay, onBack }) {
   const due = Math.max(0, subtotal - discount - credit - voucherDiscount)
 
   return (
-    <div className="font-poppins flex min-h-screen flex-col bg-[#F5F4F7] px-3 pt-5 pb-6">
-      <div className="relative">
-        <button
-          type="button"
-          onClick={onBack}
-          aria-label="Go back"
-          className="absolute top-1 left-1 cursor-pointer p-2 text-black"
-        >
-          <svg width="10" height="18" viewBox="0 0 10 18" fill="none">
-            <path d="M9 1 2 9l7 8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-          </svg>
-        </button>
-        <h1 className="text-center text-2xl font-semibold text-black">Final invoice</h1>
-      </div>
-
-      <div className="mt-5">
+    <GradientHeader title="Final invoice" onBack={onBack} sheetClassName="bg-[#F5F4F7]">
+      <div className="font-poppins flex grow flex-col px-3 pb-6">
+      <div className="mt-1">
         <AppointmentCard booking={order} label="Work completed — payment due" price={due} />
       </div>
 
@@ -116,6 +104,7 @@ export default function InvoiceScreen({ order, onPay, onBack }) {
       >
         Pay {due} AED
       </GradientButton>
-    </div>
+      </div>
+    </GradientHeader>
   )
 }

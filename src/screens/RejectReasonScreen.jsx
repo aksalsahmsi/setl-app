@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import GradientHeader from '../components/GradientHeader.jsx'
 import GradientButton from '../components/GradientButton.jsx'
 import { REJECT_REASONS } from '../data/providers.js'
 
@@ -10,19 +11,8 @@ export default function RejectReasonScreen({ onSubmit, onBack }) {
   const [note, setNote] = useState('')
 
   return (
-    <div className="font-poppins flex min-h-screen flex-col bg-[#F5F4F7] px-3 pt-5 pb-6">
-      <h1 className="text-center text-2xl font-semibold text-black">Reason for rejection</h1>
-      <button
-        type="button"
-        onClick={onBack}
-        aria-label="Go back"
-        className="mt-1 w-fit cursor-pointer p-2 text-gray-400"
-      >
-        <svg width="10" height="18" viewBox="0 0 10 18" fill="none">
-          <path d="M9 1 2 9l7 8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-        </svg>
-      </button>
-
+    <GradientHeader title="Reason for rejection" onBack={onBack} sheetClassName="bg-[#F5F4F7]">
+      <div className="font-poppins flex grow flex-col px-3 pb-6">
       <div className="mt-2 rounded-2xl bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
         {REJECT_REASONS.map((r) => (
           <label key={r} className="flex cursor-pointer items-center justify-between py-3.5">
@@ -73,6 +63,7 @@ export default function RejectReasonScreen({ onSubmit, onBack }) {
       >
         Skip
       </button>
-    </div>
+      </div>
+    </GradientHeader>
   )
 }
