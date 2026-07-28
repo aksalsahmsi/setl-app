@@ -1,3 +1,5 @@
+import { CUSTOMER_ME } from '../data/providers.js'
+
 // Provider appointment summary card, shared by checkout and order tracking.
 export default function AppointmentCard({ booking, label, price, onChange }) {
   return (
@@ -19,10 +21,10 @@ export default function AppointmentCard({ booking, label, price, onChange }) {
         <p className="text-black">{price} AED</p>
       </div>
       <div className="mt-1 pl-12 text-sm text-gray-400">
-        <p>Ahmed Alshamsi</p>
-        <p>0501234567</p>
+        <p>{CUSTOMER_ME.name}</p>
+        <p>{CUSTOMER_ME.phone}</p>
         <div className="flex items-end justify-between">
-          <p>9 Yaw Hayah St-Ni&quot;mah-Abu Dhabi</p>
+          <p>{CUSTOMER_ME.address}</p>
           {onChange && (
             <button type="button" onClick={onChange} className="cursor-pointer text-[15px] text-[#8442FF]">
               Change

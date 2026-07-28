@@ -6,7 +6,7 @@ import ProgressSteps from '../components/ProgressSteps.jsx'
 import DateTimeSheet from '../components/DateTimeSheet.jsx'
 import PaymentMethods from '../components/PaymentMethods.jsx'
 import VoucherField from '../components/VoucherField.jsx'
-import { AC_PRICE_PER_UNIT, SERVICES } from '../data/providers.js'
+import { AC_PRICE_PER_UNIT, CUSTOMER_ME, SERVICES } from '../data/providers.js'
 
 // Checkout in three flavors:
 //  - inspection:  the standardized fee is prepaid here (payment methods +
@@ -15,7 +15,7 @@ import { AC_PRICE_PER_UNIT, SERVICES } from '../data/providers.js'
 //                 from Orders once the work is done (Phase 1)
 //  - maintenance: approved estimate — same 0-due confirm, with the prepaid
 //                 inspection fee credited on the projected total
-export default function OrderDetailsScreen({ booking, counts, onPay, onBack, onReschedule, onChangeProvider }) {
+export default function OrderDetailsScreen({ booking, counts, place, onPay, onBack, onReschedule, onChangeProvider }) {
   const [method, setMethod] = useState('apple')
   const [voucherRate, setVoucherRate] = useState(0)
   const [confirming, setConfirming] = useState(false)
@@ -108,13 +108,16 @@ export default function OrderDetailsScreen({ booking, counts, onPay, onBack, onR
           </div>
           <h2 className="mt-4 text-lg font-semibold text-black">Location</h2>
           <div className="mt-1 rounded-xl bg-white p-3 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
-            <p className="text-[15px] text-black">9 Yaw Hayah St-Ni&quot;mah-Abu Dhabi</p>
+            <p className="text-[15px] text-black">
+              {place?.nameNumber?.trim() ? place.nameNumber : CUSTOMER_ME.address}
+            </p>
+            <p className="text-xs text-gray-400">{CUSTOMER_ME.area}</p>
             <div className="mt-2 flex gap-2">
-              {['Indoor', 'outdoor', 'Villa'].map((t, i) => (
+              {['Indoor', 'Outdoor', 'Villa'].map((t) => (
                 <span
                   key={t}
                   className={`rounded-lg border px-4 py-1.5 text-sm ${
-                    i === 0 ? 'border-[#8442FF] text-[#8442FF]' : 'border-gray-200 text-gray-400'
+                    (place?.type ?? 'Indoor') === t ? 'border-[#8442FF] text-[#8442FF]' : 'border-gray-200 text-gray-400'
                   }`}
                 >
                   {t}

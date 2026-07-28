@@ -103,6 +103,7 @@ function App() {
   })
   const [profileCleaner, setProfileCleaner] = useState(null) // cleaner whose profile is open
   const [profileBack, setProfileBack] = useState('providers') // screen to return to from a profile
+  const [place, setPlace] = useState(null) // customer's location from LocationScreen ({ type, nameNumber })
 
   function openProfile(cleaner, from) {
     setProfileCleaner(cleaner)
@@ -472,6 +473,7 @@ function App() {
     setServiceOptions([])
     setFavoriteCleaner(null)
     setProfileCleaner(null)
+    setPlace(null)
     try {
       localStorage.removeItem('setl_regular_cleaner')
     } catch {
@@ -510,7 +512,14 @@ function App() {
         }
       />
     ),
-    location: <LocationScreen onConfirm={() => setScreen('home')} />,
+    location: (
+      <LocationScreen
+        onConfirm={(picked) => {
+          setPlace(picked)
+          setScreen('home')
+        }}
+      />
+    ),
     home: (
       <HomeScreen
         onOpenService={(target) => {
@@ -651,6 +660,7 @@ function App() {
       <OrderDetailsScreen
         booking={booking}
         counts={counts}
+        place={place}
         onBack={() =>
           setScreen(booking?.variant === 'maintenance' ? 'tracking' : 'providers')
         }
