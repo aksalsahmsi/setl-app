@@ -32,7 +32,7 @@ export default function SPCoverageScreen({ employees, index, onSet, onApplyAll, 
         <div className="mt-3 flex items-center justify-between rounded-xl border border-gray-200 p-3">
           <span className="text-sm text-black">Service coverage range</span>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={() => setKm(Math.max(1, km - 1))} className="h-7 w-7 cursor-pointer rounded-md bg-gray-100 text-gray-500">–</button>
+            <button type="button" onClick={() => setKm(Math.max(1, km - 1))} className="h-7 w-7 cursor-pointer rounded-md bg-gray-100 text-gray-500">−</button>
             <span className="min-w-14 rounded-md border border-[#8442FF] px-2 py-1 text-center text-sm text-[#8442FF]">{km} KM</span>
             <button type="button" onClick={() => setKm(km + 1)} className="h-7 w-7 cursor-pointer rounded-md bg-gray-100 text-gray-500">+</button>
           </div>

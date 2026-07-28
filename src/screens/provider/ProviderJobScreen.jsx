@@ -5,7 +5,7 @@ import GradientButton from '../../components/GradientButton.jsx'
 function Stepper({ value, onDec, onInc, suffix }) {
   return (
     <div className="flex items-center gap-1.5">
-      <button type="button" onClick={onDec} className="h-8 w-8 cursor-pointer rounded-md bg-gray-100 text-lg text-gray-500 active:scale-95">–</button>
+      <button type="button" onClick={onDec} className="h-8 w-8 cursor-pointer rounded-md bg-gray-100 text-lg text-gray-500 active:scale-95">−</button>
       <span className="min-w-14 text-center text-sm font-medium text-black">{value}{suffix}</span>
       <button type="button" onClick={onInc} className="h-8 w-8 cursor-pointer rounded-md bg-gray-100 text-lg text-gray-500 active:scale-95">+</button>
     </div>

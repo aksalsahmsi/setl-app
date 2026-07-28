@@ -12,7 +12,7 @@ function Counter({ value, onChange }) {
         onClick={() => onChange(Math.max(0, value - 1))}
         className="h-10 w-10 cursor-pointer rounded-md bg-gray-100 text-lg text-gray-500 transition-transform duration-100 active:scale-95"
       >
-        –
+        −
       </button>
       <span className="flex h-10 w-10 items-center justify-center rounded-md border border-[#8442FF] text-[15px] text-black">
         {value}

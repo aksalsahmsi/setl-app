@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import GradientButton from '../components/GradientButton.jsx'
 
-const OTP_LENGTH = 5
+const OTP_LENGTH = 4
 const RESEND_SECONDS = 30
 
 export default function OtpScreen({ onVerify }) {
@@ -97,15 +97,17 @@ export default function OtpScreen({ onVerify }) {
         Verify
       </GradientButton>
 
-      <p className="mt-4 text-right text-sm text-black">Didn&apos;t receive OTP?</p>
-      <button
-        type="button"
-        onClick={resend}
-        disabled={resendIn > 0}
-        className="mt-1 cursor-pointer py-1 text-right text-sm text-[#2790C3] disabled:cursor-default disabled:text-gray-400"
-      >
-        {resendIn > 0 ? `Resend OTP (0:${String(resendIn).padStart(2, '0')})` : 'Resend OTP'}
-      </button>
+      <div className="mt-5 flex items-center justify-center gap-1.5 text-sm">
+        <span className="text-[#6B6B6B]">Didn&apos;t receive the code?</span>
+        <button
+          type="button"
+          onClick={resend}
+          disabled={resendIn > 0}
+          className="cursor-pointer font-medium text-[#2790C3] disabled:cursor-default disabled:text-gray-400"
+        >
+          {resendIn > 0 ? `Resend (0:${String(resendIn).padStart(2, '0')})` : 'Resend'}
+        </button>
+      </div>
     </div>
   )
 }

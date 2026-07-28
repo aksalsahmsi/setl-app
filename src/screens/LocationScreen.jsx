@@ -2,7 +2,7 @@ import { useState } from 'react'
 import GradientButton from '../components/GradientButton.jsx'
 import FakeMap from '../components/FakeMap.jsx'
 
-const PLACE_TYPES = ['Indoor', 'outdoor', 'Villa']
+const PLACE_TYPES = ['Indoor', 'Outdoor', 'Villa']
 
 // Pick your location after logging in (plumber mockup 3).
 export default function LocationScreen({ onConfirm }) {
@@ -26,7 +26,7 @@ export default function LocationScreen({ onConfirm }) {
         </div>
         <div className="absolute top-20 left-4 flex overflow-hidden rounded-lg bg-white text-sm shadow">
           <span className="px-3 py-1.5 font-semibold text-black">Maps</span>
-          <span className="px-3 py-1.5 text-gray-400">Satelite</span>
+          <span className="px-3 py-1.5 text-gray-400">Satellite</span>
         </div>
       </div>
 
@@ -60,7 +60,7 @@ export default function LocationScreen({ onConfirm }) {
           type="text"
           value={nameNumber}
           onChange={(e) => setNameNumber(e.target.value)}
-          placeholder="Name /  .Number"
+          placeholder="Building name or number"
           className="mt-4 rounded-xl bg-[#F3F2F5] px-4 py-3.5 text-base text-black outline-none placeholder:text-[#B9B7BF]"
         />
 
