@@ -545,7 +545,7 @@ function App() {
         counts={counts}
         setCounts={setCounts}
         onSearchProviders={() => openProviders('ac', 'booking')}
-        onBookInspection={() => openTriage('ac')}
+        onSendPhoto={() => openTriage('ac')}
         onBack={() => setScreen('home')}
       />
     ),
@@ -591,7 +591,7 @@ function App() {
           setServiceOptions(selected)
           openProviders(flow.service, 'booking', flow.symptoms)
         }}
-        onBookInspection={() => openTriage(flow.service, flow.symptoms)}
+        onSendPhoto={() => openTriage(flow.service, flow.symptoms)}
         onBack={() => setScreen('home')}
       />
     ),

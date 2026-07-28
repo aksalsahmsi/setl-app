@@ -29,7 +29,7 @@ function Counter({ value, onChange }) {
   )
 }
 
-export default function AcServiceScreen({ counts, setCounts, onSearchProviders, onBookInspection, onBack }) {
+export default function AcServiceScreen({ counts, setCounts, onSearchProviders, onSendPhoto, onBack }) {
   const nothingSelected = counts.refill + counts.clean === 0
   return (
     <GradientHeader title="AC cleaning & Refilling" onBack={onBack}>
@@ -59,7 +59,7 @@ export default function AcServiceScreen({ counts, setCounts, onSearchProviders, 
 
         <button
           type="button"
-          onClick={onBookInspection}
+          onClick={onSendPhoto}
           className="mt-4 w-full cursor-pointer rounded-xl border border-[#8442FF] bg-white py-3 text-center"
         >
           <span className="block text-sm text-[#2790C3]">Not sure what&apos;s wrong?</span>

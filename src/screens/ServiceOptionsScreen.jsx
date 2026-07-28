@@ -6,8 +6,8 @@ import { SERVICES } from '../data/providers.js'
 // Generic "pick the jobs you need" screen for every catalog service that
 // defines `options` in SERVICES (technician, electrician, network, curtains,
 // outdoor furniture, car wash). The two-option pattern from the FigJam
-// board: know what you need -> pick it here; not sure -> book an inspection.
-export default function ServiceOptionsScreen({ serviceKey, onSearchProviders, onBookInspection, onBack }) {
+// board: know what you need -> pick it here; not sure -> send a pro a photo.
+export default function ServiceOptionsScreen({ serviceKey, onSearchProviders, onSendPhoto, onBack }) {
   const service = SERVICES[serviceKey]
   const [picked, setPicked] = useState(() => new Set())
 
@@ -66,7 +66,7 @@ export default function ServiceOptionsScreen({ serviceKey, onSearchProviders, on
         {service.inspectionLabel && (
           <button
             type="button"
-            onClick={onBookInspection}
+            onClick={onSendPhoto}
             className="mt-4 w-full cursor-pointer rounded-xl border border-[#8442FF] bg-white py-3 text-center"
           >
             <span className="block text-sm text-[#2790C3]">Not sure what&apos;s wrong?</span>

@@ -34,7 +34,7 @@ export default function ProviderRatingsScreen() {
         <div className="flex items-center gap-5">
           <div className="text-center">
             <p className="text-4xl font-bold text-black">{PROVIDER_ME.rating}</p>
-            <Stars n={5} />
+            <Stars n={Math.round(PROVIDER_ME.rating)} />
             <p className="mt-1 text-xs text-gray-400">{PROVIDER_ME.jobsDone} jobs</p>
           </div>
           <div className="grow">

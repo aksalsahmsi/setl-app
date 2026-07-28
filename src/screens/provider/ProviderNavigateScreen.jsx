@@ -6,6 +6,10 @@ import GradientButton from '../../components/GradientButton.jsx'
 // that moves the job into the on-site (in progress) state.
 export default function ProviderNavigateScreen({ order, onArrived, onBack }) {
   if (!order) return null
+  // One source of truth for the trip readout (a real app would get this from
+  // the routing API). Kept stable per order so the numbers don't jump around.
+  const distanceKm = 6 + (order.id % 10)
+  const etaMin = Math.round(distanceKm * 2.2)
   return (
     <div className="font-poppins flex min-h-screen flex-col bg-white">
       <div className="relative shrink-0 bg-linear-[90deg,#C05CF7,#8442FF] pt-4 pb-10">
@@ -24,13 +28,13 @@ export default function ProviderNavigateScreen({ order, onArrived, onBack }) {
             Maps <span className="ml-1 text-gray-400">Satellite</span>
           </div>
           <div className="absolute top-24 left-6 rounded-lg bg-[#2563EB] px-2.5 py-1.5 text-xs font-semibold text-white shadow">
-            🏍 23 min · 15 KM
+            🚗 {etaMin} min · {distanceKm} KM
           </div>
         </div>
 
         <div className="mt-5 flex items-center justify-between rounded-xl bg-[#F1ECFB] px-4 py-3">
-          <span className="text-sm font-medium text-[#8442FF]">15 KM</span>
-          <span className="text-sm font-medium text-[#8442FF]">≈ 23 min</span>
+          <span className="text-sm font-medium text-[#8442FF]">{distanceKm} KM</span>
+          <span className="text-sm font-medium text-[#8442FF]">≈ {etaMin} min</span>
         </div>
 
         <div className="mt-4 rounded-2xl bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
