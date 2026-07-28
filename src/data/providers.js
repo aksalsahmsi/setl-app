@@ -430,12 +430,70 @@ export const EMPLOYEE_ROLES = ['Manager', 'Device installer', 'Technician', 'Plu
 // Avatar circle colors cycled for employee cards.
 export const EMPLOYEE_COLORS = ['#7C3AED', '#0FA3A3', '#E0442B', '#2563EB', '#B5820E', '#2E9E4F']
 
-// The three pricing tiers a company sets per job difficulty (mockup Profile).
-export const CATEGORY_TASKS = [
-  { key: 'normal', label: 'Normal Task', color: '#6B7280' },
-  { key: 'technical', label: 'Technical fix', color: '#0FA3A3' },
-  { key: 'hard', label: 'Hard Task', color: '#E0442B' },
-]
+// A company prices the real jobs its trade actually does (not abstract
+// difficulty tiers). Each SP service has a default job list with typical
+// prices; the SP tweaks the numbers and can add/remove jobs on the Services
+// screen. `afterInspection: true` jobs are quoted on site, not upfront.
+export const SP_SERVICE_TASKS = {
+  Plumber: [
+    { label: 'Fix / replace tap or faucet', price: 90 },
+    { label: 'Unblock drain or sink', price: 120 },
+    { label: 'Fix leaking pipe', price: 100 },
+    { label: 'Install / replace water heater', price: 250 },
+    { label: 'Fix toilet or flush', price: 150 },
+    { label: 'Call-out / inspection', price: 50 },
+  ],
+  Electrician: [
+    { label: 'Light fixture installation', price: 60 },
+    { label: 'Socket or switch replacement', price: 40 },
+    { label: 'Ceiling fan installation', price: 90 },
+    { label: 'Breaker replacement', price: 80 },
+    { label: 'Wiring repair', price: 120 },
+    { label: 'Call-out / inspection', price: 40 },
+  ],
+  'Network Technician': [
+    { label: 'Wi-Fi optimization', price: 100 },
+    { label: 'Coverage extender setup', price: 120 },
+    { label: 'New router installation', price: 80 },
+    { label: 'New cabling point', price: 70 },
+    { label: 'Call-out / inspection', price: 35 },
+  ],
+  'Smart Home Installation': [
+    { label: 'Smart device installation', price: 90 },
+    { label: 'Security camera installation', price: 120 },
+    { label: 'Smart lock installation', price: 150 },
+    { label: 'Full smart-home setup', price: 300 },
+    { label: 'Call-out / consultation', price: 50 },
+  ],
+  'Car Cleaning': [
+    { label: 'Sedan wash', price: 30 },
+    { label: 'SUV wash', price: 45 },
+    { label: 'Interior deep clean', price: 80 },
+    { label: 'Full detail', price: 150 },
+  ],
+  'Pest Control': [
+    { label: 'General pest spray', price: 120 },
+    { label: 'Cockroach treatment', price: 150 },
+    { label: 'Bed bug treatment', price: 300 },
+    { label: 'Termite inspection', price: 100 },
+  ],
+}
+
+// The default job list for a service (a copy, so edits don't mutate the
+// template), falling back to a generic list for trades without a specific one.
+export function defaultTasksFor(serviceLabel) {
+  const tasks = SP_SERVICE_TASKS[serviceLabel] ?? [
+    { label: 'Standard job', price: 100 },
+    { label: 'Call-out / inspection', price: 50 },
+  ]
+  return tasks.map((t) => ({ ...t }))
+}
+
+// Seed a company's per-service price lists from the templates when it picks
+// the services it offers.
+export function seedServicePricing(services = []) {
+  return services.reduce((acc, s) => ({ ...acc, [s]: defaultTasksFor(s) }), {})
+}
 
 // Days offered in the schedule From/To dropdowns.
 export const SCHEDULE_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
@@ -510,6 +568,9 @@ export function emptyCompany() {
   return {
     services: [],
     employees: [],
-    profile: { name: '', pricePerHour: '', pricing: { normal: '', technical: '', hard: '' }, customerService: '' },
+    profile: { name: '', customerService: '' },
+    // Per-service job price lists (keyed by service label), seeded from the
+    // templates when the company picks its services.
+    servicePricing: {},
   }
 }

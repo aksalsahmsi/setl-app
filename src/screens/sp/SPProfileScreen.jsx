@@ -1,13 +1,11 @@
 import { useState } from 'react'
 import GradientHeader from '../../components/GradientHeader.jsx'
 import GradientButton from '../../components/GradientButton.jsx'
-import { CATEGORY_TASKS } from '../../data/providers.js'
 
-// SP onboarding final step: the company's public profile and pricing.
+// SP onboarding final step: the company's public profile. Per-job pricing is
+// set on the Services screen (seeded from trade defaults), not here.
 export default function SPProfileScreen({ profile, onDone, onBack }) {
   const [name, setName] = useState(profile?.name ?? '')
-  const [pricePerHour, setPricePerHour] = useState(profile?.pricePerHour ?? '')
-  const [pricing, setPricing] = useState(profile?.pricing ?? { normal: '', technical: '', hard: '' })
   const [customerService, setCustomerService] = useState(profile?.customerService ?? '')
 
   return (
@@ -25,30 +23,15 @@ export default function SPProfileScreen({ profile, onDone, onBack }) {
         <label className="text-xs text-gray-400">Company Name</label>
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Company name" className="mt-1 mb-4 w-full border-b border-gray-200 pb-2 text-sm text-black outline-none focus:border-[#8442FF]" />
 
-        <label className="text-xs text-gray-400">Price per Hour</label>
-        <input value={pricePerHour} onChange={(e) => setPricePerHour(e.target.value.replace(/\D/g, ''))} inputMode="numeric" placeholder="AED / hr" className="mt-1 mb-4 w-full border-b border-gray-200 pb-2 text-sm text-black outline-none focus:border-[#8442FF]" />
-
-        <label className="mb-2 block text-xs text-gray-400">Category Pricing</label>
-        <div className="mb-4 grid grid-cols-3 gap-2">
-          {CATEGORY_TASKS.map((c) => (
-            <div key={c.key} className="rounded-xl border border-gray-100 p-2 text-center">
-              <span className="inline-block rounded-md px-2 py-1 text-[11px] font-medium text-white" style={{ background: c.color }}>{c.label}</span>
-              <input
-                value={pricing[c.key]}
-                onChange={(e) => setPricing({ ...pricing, [c.key]: e.target.value.replace(/\D/g, '') })}
-                inputMode="numeric"
-                placeholder="AED"
-                className="mt-2 w-full rounded-md border border-gray-200 py-1 text-center text-xs text-black outline-none focus:border-[#8442FF]"
-              />
-            </div>
-          ))}
-        </div>
-
-        <label className="text-xs text-gray-400">Customer service (serial)</label>
+        <label className="text-xs text-gray-400">Customer service (support number)</label>
         <input value={customerService} onChange={(e) => setCustomerService(e.target.value)} placeholder="Support number" className="mt-1 w-full border-b border-gray-200 pb-2 text-sm text-black outline-none focus:border-[#8442FF]" />
 
+        <p className="mt-4 rounded-xl bg-[#EDE4FD] p-3 text-xs text-[#8442FF]">
+          Your job prices are set up from the standard list for your trade — adjust them any time on the Services screen.
+        </p>
+
         <div className="grow" />
-        <GradientButton onClick={() => onDone({ name, pricePerHour, pricing, customerService })}>Done</GradientButton>
+        <GradientButton onClick={() => onDone({ name, customerService })}>Done</GradientButton>
       </div>
     </GradientHeader>
   )

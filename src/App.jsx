@@ -39,7 +39,7 @@ import SPAccountScreen from './screens/sp/SPAccountScreen.jsx'
 import TabBar from './components/TabBar.jsx'
 import ProviderTabBar from './components/ProviderTabBar.jsx'
 import SPTabBar from './components/SPTabBar.jsx'
-import { SERVICES, PROVIDER_ME, emptyCompany } from './data/providers.js'
+import { SERVICES, PROVIDER_ME, emptyCompany, seedServicePricing } from './data/providers.js'
 import WizardScreen from './screens/WizardScreen.jsx'
 import { advance, createOrder, isActive, recordEvent, seedOrderIds, transition } from './data/orders.js'
 
@@ -760,7 +760,7 @@ function App() {
     spChooseService: (
       <ChooseServiceScreen
         onConfirm={(services) => {
-          setCompany((c) => ({ ...c, services }))
+          setCompany((c) => ({ ...c, services, servicePricing: seedServicePricing(services) }))
           setScreen('spEmployees')
         }}
         onBack={() => setScreen('login')}
@@ -853,7 +853,15 @@ function App() {
         onBack={() => setScreen(spDetailBack)}
       />
     ),
-    spServices: <SPServicesScreen company={company} onBack={() => setScreen('spHome')} />,
+    spServices: (
+      <SPServicesScreen
+        company={company}
+        onUpdatePricing={(service, tasks) =>
+          setCompany((c) => ({ ...c, servicePricing: { ...(c.servicePricing ?? {}), [service]: tasks } }))
+        }
+        onBack={() => setScreen('spHome')}
+      />
+    ),
     spNotifications: <SPNotificationsScreen orders={orders} onBack={() => setScreen('spHome')} />,
     spEmployeesManage: (
       <SPEmployeesScreen
