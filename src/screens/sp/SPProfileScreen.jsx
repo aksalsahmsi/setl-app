@@ -48,10 +48,7 @@ export default function SPProfileScreen({ profile, onDone, onBack }) {
         <input value={customerService} onChange={(e) => setCustomerService(e.target.value)} placeholder="Support number" className="mt-1 w-full border-b border-gray-200 pb-2 text-sm text-black outline-none focus:border-[#8442FF]" />
 
         <div className="grow" />
-        <button type="button" onClick={() => onDone({ name, pricePerHour, pricing, customerService }, true)} className="mb-3 h-12 w-full cursor-pointer rounded-xl border border-[#8442FF] bg-white text-[15px] font-medium text-[#8442FF] active:scale-[0.98]">
-          Assign later
-        </button>
-        <GradientButton onClick={() => onDone({ name, pricePerHour, pricing, customerService }, false)}>Done</GradientButton>
+        <GradientButton onClick={() => onDone({ name, pricePerHour, pricing, customerService })}>Done</GradientButton>
       </div>
     </GradientHeader>
   )

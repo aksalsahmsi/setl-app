@@ -28,7 +28,6 @@ import ProviderAccountScreen from './screens/provider/ProviderAccountScreen.jsx'
 import SPEmployeesScreen from './screens/sp/SPEmployeesScreen.jsx'
 import SPCoverageScreen from './screens/sp/SPCoverageScreen.jsx'
 import SPTimeSlotsScreen from './screens/sp/SPTimeSlotsScreen.jsx'
-import SPPreviewScreen from './screens/sp/SPPreviewScreen.jsx'
 import SPProfileScreen from './screens/sp/SPProfileScreen.jsx'
 import SPDoneScreen from './screens/sp/SPDoneScreen.jsx'
 import SPHomeScreen from './screens/sp/SPHomeScreen.jsx'
@@ -787,20 +786,13 @@ function App() {
         onSet={(i, schedule) => setEmployee(i, { schedule })}
         onApplyAll={(schedule) => {
           setCompany((c) => ({ ...c, employees: c.employees.map((e) => ({ ...e, schedule })) }))
-          setScreen('spPreview')
+          setScreen('spProfile')
         }}
         onNext={() => {
           if (spEmpIndex < company.employees.length - 1) setSpEmpIndex(spEmpIndex + 1)
-          else setScreen('spPreview')
+          else setScreen('spProfile')
         }}
         onBack={() => setScreen('spCoverage')}
-      />
-    ),
-    spPreview: (
-      <SPPreviewScreen
-        employees={company.employees}
-        onDone={() => setScreen('spProfile')}
-        onBack={() => setScreen('spSchedule')}
       />
     ),
     spProfile: (
@@ -810,7 +802,7 @@ function App() {
           setCompany((c) => ({ ...c, profile }))
           setScreen('spDone')
         }}
-        onBack={() => setScreen('spPreview')}
+        onBack={() => setScreen('spSchedule')}
       />
     ),
     spDone: <SPDoneScreen onDone={() => setScreen('spHome')} />,

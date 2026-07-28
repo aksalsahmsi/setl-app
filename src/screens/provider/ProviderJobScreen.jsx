@@ -90,21 +90,14 @@ export default function ProviderJobScreen({ order, onSendEstimate, onDone, onRep
         </div>
         <p className="mt-0.5 text-sm text-gray-400">{CUSTOMER_ME.name}</p>
 
-        {/* Report / Dial / Done row (mockup) */}
+        {/* Quick actions — the job is completed via the primary button below
+            ("Send estimate" for inspections, "Mark as done" for direct work). */}
         <div className="mt-3 flex overflow-hidden rounded-lg border border-gray-100">
           <button type="button" onClick={() => setReporting(true)} className="flex-1 cursor-pointer bg-gray-100 py-2.5 text-sm font-medium text-gray-500 active:opacity-80">
             Report
           </button>
           <button type="button" onClick={onDial} className="flex-1 cursor-pointer bg-[#BFD3F5] py-2.5 text-sm font-medium text-[#2657B0] active:opacity-80">
             Dial
-          </button>
-          <button
-            type="button"
-            disabled={inspecting}
-            onClick={() => onDone(order)}
-            className="flex-1 cursor-pointer bg-[#9FE0C0] py-2.5 text-sm font-medium text-[#177A50] active:opacity-80 disabled:opacity-40"
-          >
-            Done
           </button>
         </div>
       </div>
