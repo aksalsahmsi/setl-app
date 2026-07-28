@@ -5,7 +5,7 @@ import { EMPLOYEE_ROLES, EMPLOYEE_COLORS } from '../../data/providers.js'
 
 // SP onboarding: the company's roster. Add employees (workers) — each gets a
 // coverage range and schedule in the next steps.
-export default function SPEmployeesScreen({ title, employees, onAdd, onRemove, onContinue, onBack }) {
+export default function SPEmployeesScreen({ title, employees, onAdd, onRemove, onContinue, onBack, manage = false }) {
   const [adding, setAdding] = useState(false)
   const [form, setForm] = useState({ name: '', role: EMPLOYEE_ROLES[1], email: '', phone: '' })
 
@@ -71,9 +71,9 @@ export default function SPEmployeesScreen({ title, employees, onAdd, onRemove, o
         </div>
 
         <div className="grow" />
-        {employees.length > 0 && (
+        {(manage || employees.length > 0) && (
           <GradientButton className="mt-6" onClick={onContinue}>
-            Continue ({employees.length} {employees.length === 1 ? 'employee' : 'employees'})
+            {manage ? 'Done' : `Continue (${employees.length} ${employees.length === 1 ? 'employee' : 'employees'})`}
           </GradientButton>
         )}
       </div>

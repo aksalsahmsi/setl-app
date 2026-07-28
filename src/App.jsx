@@ -33,15 +33,25 @@ import SPCoverageScreen from './screens/sp/SPCoverageScreen.jsx'
 import SPTimeSlotsScreen from './screens/sp/SPTimeSlotsScreen.jsx'
 import SPPreviewScreen from './screens/sp/SPPreviewScreen.jsx'
 import SPProfileScreen from './screens/sp/SPProfileScreen.jsx'
+import SPDoneScreen from './screens/sp/SPDoneScreen.jsx'
 import SPHomeScreen from './screens/sp/SPHomeScreen.jsx'
+import SPRequestsScreen from './screens/sp/SPRequestsScreen.jsx'
+import SPServicesScreen from './screens/sp/SPServicesScreen.jsx'
+import SPNotificationsScreen from './screens/sp/SPNotificationsScreen.jsx'
+import SPAccountScreen from './screens/sp/SPAccountScreen.jsx'
 import TabBar from './components/TabBar.jsx'
 import ProviderTabBar from './components/ProviderTabBar.jsx'
+import SPTabBar from './components/SPTabBar.jsx'
 import { SERVICES, PROVIDER_ME, emptyCompany } from './data/providers.js'
 import WizardScreen from './screens/WizardScreen.jsx'
 import { advance, createOrder, isActive, recordEvent, seedOrderIds, transition } from './data/orders.js'
 
 const TAB_SCREENS = ['home', 'orders', 'profile']
 const PROVIDER_TAB_SCREENS = ['providerHome', 'providerRatings', 'providerNotifications', 'providerAccount']
+// SP screens that show the SP bottom tab bar (all but onboarding + SETLed).
+const SP_TAB_SCREENS = [
+  'spHome', 'spExistingRequests', 'spPreviousRequests', 'spServices', 'spNotifications', 'spEmployeesManage', 'spAccount',
+]
 
 // Orders are shared between the customer and provider apps and persisted so
 // the two-sided flow survives role-switching (and a reload) on one device.
@@ -336,6 +346,20 @@ function App() {
   const workerOrder = orders.find((o) => o.id === workerOrderId) ?? null
   // The worker (Alana) sees jobs that are unassigned or assigned to her.
   const workerOrders = orders.filter((o) => !o.assignedName || o.assignedName === PROVIDER_ME.name)
+  // The SP employee record that maps to the worker app (links role/company).
+  const workerEmployee = company.employees.find((e) => e.name === PROVIDER_ME.name) ?? null
+  // Service Provider request lists + grid tile counts.
+  const spActive = orders.filter(isActive)
+  const spPrevious = orders.filter((o) => !isActive(o))
+  const spNotifCount = orders.filter(
+    (o) => (o.state === 'scheduled' && !o.assignedName) || o.state === 'estimate_ready' || o.state === 'awaiting_payment',
+  ).length
+  const spCounts = {
+    existing: spActive.length,
+    previous: spPrevious.length,
+    notif: spNotifCount,
+    employees: company.employees.length,
+  }
 
   function updateOrder(id, updater) {
     setOrders((os) => os.map((o) => (o.id === id ? updater(o) : o)))
@@ -707,6 +731,8 @@ function App() {
     providerHome: (
       <ProviderHomeScreen
         orders={workerOrders}
+        employee={workerEmployee}
+        companyName={company.profile?.name}
         onOpenOrder={(order) => {
           setWorkerOrderId(order.id)
           setScreen('providerOrder')
@@ -822,16 +848,51 @@ function App() {
         profile={company.profile}
         onDone={(profile) => {
           setCompany((c) => ({ ...c, profile }))
-          setScreen('spHome')
+          setScreen('spDone')
         }}
         onBack={() => setScreen('spPreview')}
       />
     ),
-    spHome: (
-      <SPHomeScreen
+    spDone: <SPDoneScreen onDone={() => setScreen('spHome')} />,
+    spHome: <SPHomeScreen company={company} counts={spCounts} onOpen={(tile) => setScreen(tile === 'spEmployees' ? 'spEmployeesManage' : tile)} />,
+    spExistingRequests: (
+      <SPRequestsScreen
+        title="Existing requests"
+        heading="Active jobs"
+        orders={spActive}
+        employees={company.employees}
+        onAssign={assignJob}
+        onBack={() => setScreen('spHome')}
+      />
+    ),
+    spPreviousRequests: (
+      <SPRequestsScreen
+        title="Previous requests"
+        heading="Completed"
+        orders={spPrevious}
+        employees={company.employees}
+        onAssign={assignJob}
+        onBack={() => setScreen('spHome')}
+      />
+    ),
+    spServices: <SPServicesScreen company={company} onBack={() => setScreen('spHome')} />,
+    spNotifications: <SPNotificationsScreen orders={orders} onBack={() => setScreen('spHome')} />,
+    spEmployeesManage: (
+      <SPEmployeesScreen
+        title="Employees"
+        manage
+        employees={company.employees}
+        onAdd={(emp) => setCompany((c) => ({ ...c, employees: [...c.employees, emp] }))}
+        onRemove={(id) => setCompany((c) => ({ ...c, employees: c.employees.filter((e) => e.id !== id) }))}
+        onContinue={() => setScreen('spHome')}
+        onBack={() => setScreen('spHome')}
+      />
+    ),
+    spAccount: (
+      <SPAccountScreen
         company={company}
         orders={orders}
-        onAssign={assignJob}
+        onOpenEmployees={() => setScreen('spEmployeesManage')}
         onSwitchCustomer={switchToCustomer}
         onSwitchWorker={switchToWorker}
         onLogout={logout}
@@ -872,6 +933,9 @@ function App() {
           requestBadge={newRequests}
           notifBadge={providerAlerts}
         />
+      )}
+      {mode === 'sp' && SP_TAB_SCREENS.includes(screen) && (
+        <SPTabBar active={screen} onChange={setScreen} notifBadge={spNotifCount} />
       )}
     </div>
   )

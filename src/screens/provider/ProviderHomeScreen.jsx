@@ -84,7 +84,12 @@ function JobCard({ order, onOpen }) {
 }
 
 // Provider (worker) home: incoming job requests and jobs in progress.
-export default function ProviderHomeScreen({ orders, onOpenOrder }) {
+export default function ProviderHomeScreen({ orders, onOpenOrder, employee, companyName }) {
+  // Show the role/company that employs this worker when linked to an SP
+  // (else fall back to the standalone trade) — keeps identity consistent.
+  const subtitle = employee
+    ? `${employee.role}${companyName ? ` · ${companyName}` : ''}`
+    : PROVIDER_ME.trade
   const relevant = orders.filter((o) => bucket(o.state) !== 'other')
   const groups = [
     { key: 'new', title: 'New Request', items: relevant.filter((o) => bucket(o.state) === 'new') },
@@ -105,7 +110,7 @@ export default function ProviderHomeScreen({ orders, onOpenOrder }) {
             {PROVIDER_ME.name[0]}
           </div>
           <p className="mt-3 text-lg font-semibold text-white">{PROVIDER_ME.name}</p>
-          <p className="text-sm text-white/85">{PROVIDER_ME.trade}</p>
+          <p className="text-sm text-white/85">{subtitle}</p>
         </div>
       </div>
 
