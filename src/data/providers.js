@@ -417,7 +417,7 @@ export function getPartCatalog(serviceKey) {
 
 // Provider-app onboarding data
 export const PROVIDER_SERVICES = [
-  'Part time cleaners',
+  'Network Technician',
   'Smart Home Installation',
   'Plumber',
   'Car Cleaning',
@@ -426,3 +426,40 @@ export const PROVIDER_SERVICES = [
 ]
 
 export const WEEK_DAYS = ['Monday', 'Sunday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
+// ---- Service Provider (company) app ----
+// The SP is the business that employs Workers. It onboards by choosing the
+// services it offers, adding employees (its workers), giving each a coverage
+// range + weekly schedule, and setting company pricing.
+
+export const EMPLOYEE_ROLES = ['Manager', 'Device installer', 'Technician', 'Plumber', 'Electrician', 'Cleaner']
+
+// Avatar circle colors cycled for employee cards.
+export const EMPLOYEE_COLORS = ['#7C3AED', '#0FA3A3', '#E0442B', '#2563EB', '#B5820E', '#2E9E4F']
+
+// The three pricing tiers a company sets per job difficulty (mockup Profile).
+export const CATEGORY_TASKS = [
+  { key: 'normal', label: 'Normal Task', color: '#6B7280' },
+  { key: 'technical', label: 'Technical fix', color: '#0FA3A3' },
+  { key: 'hard', label: 'Hard Task', color: '#E0442B' },
+]
+
+// Days offered in the schedule From/To dropdowns.
+export const SCHEDULE_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+
+// A fresh employee's default weekly schedule (matches the mockup defaults).
+export function defaultSchedule() {
+  return [
+    { from: 'Monday', to: 'Thursday', slots: [{ from: '9:00 AM', to: '3:30 PM' }, { from: '5:00 PM', to: '9:00 PM' }] },
+    { from: 'Friday', to: 'Friday', slots: [{ from: '9:00 AM', to: '12:30 PM' }] },
+  ]
+}
+
+// A fresh, empty SP company profile the onboarding fills in.
+export function emptyCompany() {
+  return {
+    services: [],
+    employees: [],
+    profile: { name: '', pricePerHour: '', pricing: { normal: '', technical: '', hard: '' }, customerService: '' },
+  }
+}

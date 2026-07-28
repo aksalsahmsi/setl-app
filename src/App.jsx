@@ -28,9 +28,15 @@ import WaitingApprovalScreen from './screens/provider/WaitingApprovalScreen.jsx'
 import ProviderRatingsScreen from './screens/provider/ProviderRatingsScreen.jsx'
 import ProviderNotificationsScreen from './screens/provider/ProviderNotificationsScreen.jsx'
 import ProviderAccountScreen from './screens/provider/ProviderAccountScreen.jsx'
+import SPEmployeesScreen from './screens/sp/SPEmployeesScreen.jsx'
+import SPCoverageScreen from './screens/sp/SPCoverageScreen.jsx'
+import SPTimeSlotsScreen from './screens/sp/SPTimeSlotsScreen.jsx'
+import SPPreviewScreen from './screens/sp/SPPreviewScreen.jsx'
+import SPProfileScreen from './screens/sp/SPProfileScreen.jsx'
+import SPHomeScreen from './screens/sp/SPHomeScreen.jsx'
 import TabBar from './components/TabBar.jsx'
 import ProviderTabBar from './components/ProviderTabBar.jsx'
-import { SERVICES } from './data/providers.js'
+import { SERVICES, PROVIDER_ME, emptyCompany } from './data/providers.js'
 import WizardScreen from './screens/WizardScreen.jsx'
 import { advance, createOrder, isActive, recordEvent, seedOrderIds, transition } from './data/orders.js'
 
@@ -51,6 +57,18 @@ function loadOrders() {
     // ignore corrupt storage
   }
   return []
+}
+
+// The Service Provider (company) profile, persisted through onboarding.
+const SP_KEY = 'setl_sp_company'
+function loadCompany() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(SP_KEY) || 'null')
+    if (saved && typeof saved === 'object') return saved
+  } catch {
+    // ignore
+  }
+  return emptyCompany()
 }
 
 // Customer flow (pay after completion — decision B):
@@ -101,6 +119,8 @@ function App() {
   const [booking, setBooking] = useState(null) // { provider, date, time, variant, service, ... }
   const [orders, setOrders] = useState(loadOrders)
   const [workerOrderId, setWorkerOrderId] = useState(null) // job the worker has open
+  const [company, setCompany] = useState(loadCompany) // Service Provider company
+  const [spEmpIndex, setSpEmpIndex] = useState(0) // per-employee onboarding cursor
   const [successInfo, setSuccessInfo] = useState(null) // { variant, total, credit } for SuccessScreen
   const [payingOrderId, setPayingOrderId] = useState(null) // order open on the invoice screen
   const [providerProfile, setProviderProfile] = useState({ services: [], range: 15, slots: null })
@@ -128,13 +148,20 @@ function App() {
     }
   }, [orders])
 
-  // The next move the simulated provider makes from this state (Phase 4:
-  // staged, so the lifecycle is visible on Orders). Inspection orders before
-  // the estimate are driven by the tracking screen instead. Later all of
-  // this comes from the backend / provider app.
+  useEffect(() => {
+    try {
+      localStorage.setItem(SP_KEY, JSON.stringify(company))
+    } catch {
+      // ignore
+    }
+  }, [company])
+
+  // Residual auto-simulation for orders no human is driving yet. A freshly
+  // booked order now WAITS at 'scheduled' — the Service Provider dispatches it
+  // to a Worker who drives the lifecycle (autopilot off). This only nudges an
+  // order already mid-flight so the demo never gets wedged.
   function simStep(ord) {
     if (ord.flowType === 'direct') {
-      if (ord.state === 'scheduled') return ['provider_en_route', 4000]
       if (ord.state === 'provider_en_route') return ['in_progress', 4000]
       if (ord.state === 'in_progress') return ['work_done', 5000]
     }
@@ -307,6 +334,8 @@ function App() {
 
   // ---- Provider (worker) app: acting on the shared order ----
   const workerOrder = orders.find((o) => o.id === workerOrderId) ?? null
+  // The worker (Alana) sees jobs that are unassigned or assigned to her.
+  const workerOrders = orders.filter((o) => !o.assignedName || o.assignedName === PROVIDER_ME.name)
 
   function updateOrder(id, updater) {
     setOrders((os) => os.map((o) => (o.id === id ? updater(o) : o)))
@@ -373,7 +402,7 @@ function App() {
     setScreen('providerHome')
   }
 
-  function switchToProvider() {
+  function switchToWorker() {
     setMode('provider')
     setWorkerOrderId(null)
     setScreen('providerHome')
@@ -384,10 +413,30 @@ function App() {
     setScreen('home')
   }
 
+  function switchToSP() {
+    setMode('sp')
+    setScreen(company.employees.length ? 'spHome' : 'spChooseService')
+  }
+
+  // ---- Service Provider (company) onboarding + dispatch ----
+  function setEmployee(index, patch) {
+    setCompany((c) => ({ ...c, employees: c.employees.map((e, i) => (i === index ? { ...e, ...patch } : e)) }))
+  }
+
+  // Assign an incoming customer job to one of the company's workers. It then
+  // surfaces in that worker's New Requests (Alana's app in this demo). Taken
+  // off autopilot so the worker — not the sim — drives it.
+  function assignJob(orderId, employee) {
+    updateOrder(orderId, (o) => ({ ...o, assignedTo: employee.id, assignedName: employee.name, autopilot: false }))
+    notify(`Assigned to ${employee.name}`)
+  }
+
   function logout() {
     setMode('customer')
     setScreen('login')
     setWorkerOrderId(null)
+    setCompany(emptyCompany())
+    setSpEmpIndex(0)
     setPhone('')
     setCounts({ refill: 1, clean: 1 })
     setHours(2)
@@ -410,15 +459,29 @@ function App() {
   const screens = {
     login: (
       <CustomerLogin
-        asProvider={mode === 'provider'}
-        onSwitchMode={() => setMode(mode === 'provider' ? 'customer' : 'provider')}
+        asProvider={mode !== 'customer'}
+        onSwitchMode={() => setMode(mode === 'customer' ? 'sp' : 'customer')}
         onContinue={(p) => {
           setPhone(p)
           setScreen('otp')
         }}
       />
     ),
-    otp: <OtpScreen onVerify={() => setScreen(mode === 'provider' ? 'providerHome' : 'location')} />,
+    otp: (
+      <OtpScreen
+        onVerify={() =>
+          setScreen(
+            mode === 'sp'
+              ? company.employees.length
+                ? 'spHome'
+                : 'spChooseService'
+              : mode === 'provider'
+                ? 'providerHome'
+                : 'location',
+          )
+        }
+      />
+    ),
     location: <LocationScreen onConfirm={() => setScreen('home')} />,
     home: (
       <HomeScreen
@@ -458,7 +521,7 @@ function App() {
         onBook={() => setScreen('home')}
       />
     ),
-    profile: <ProfileScreen phone={phone} onSwitchMode={switchToProvider} onLogout={logout} />,
+    profile: <ProfileScreen phone={phone} onSwitchMode={switchToSP} onLogout={logout} />,
     acService: (
       <AcServiceScreen
         counts={counts}
@@ -643,7 +706,7 @@ function App() {
     // Provider (worker) app
     providerHome: (
       <ProviderHomeScreen
-        orders={orders}
+        orders={workerOrders}
         onOpenOrder={(order) => {
           setWorkerOrderId(order.id)
           setScreen('providerOrder')
@@ -684,14 +747,100 @@ function App() {
       />
     ),
     providerRatings: <ProviderRatingsScreen />,
-    providerNotifications: <ProviderNotificationsScreen orders={orders} />,
+    providerNotifications: <ProviderNotificationsScreen orders={workerOrders} />,
     providerAccount: (
-      <ProviderAccountScreen orders={orders} onSwitchToCustomer={switchToCustomer} onLogout={logout} />
+      <ProviderAccountScreen orders={workerOrders} onSwitchToCustomer={switchToCustomer} onLogout={logout} />
+    ),
+    // Service Provider (company) app
+    spChooseService: (
+      <ChooseServiceScreen
+        onConfirm={(services) => {
+          setCompany((c) => ({ ...c, services }))
+          setScreen('spEmployees')
+        }}
+        onBack={() => setScreen('login')}
+      />
+    ),
+    spEmployees: (
+      <SPEmployeesScreen
+        title={company.services?.[0] ?? 'Employees'}
+        employees={company.employees}
+        onAdd={(emp) => setCompany((c) => ({ ...c, employees: [...c.employees, emp] }))}
+        onRemove={(id) => setCompany((c) => ({ ...c, employees: c.employees.filter((e) => e.id !== id) }))}
+        onContinue={() => {
+          setSpEmpIndex(0)
+          setScreen('spCoverage')
+        }}
+        onBack={() => setScreen('spChooseService')}
+      />
+    ),
+    spCoverage: (
+      <SPCoverageScreen
+        employees={company.employees}
+        index={spEmpIndex}
+        onSet={(i, km) => setEmployee(i, { coverage: km })}
+        onApplyAll={(km) => {
+          setCompany((c) => ({ ...c, employees: c.employees.map((e) => ({ ...e, coverage: km })) }))
+          setSpEmpIndex(0)
+          setScreen('spSchedule')
+        }}
+        onNext={() => {
+          if (spEmpIndex < company.employees.length - 1) setSpEmpIndex(spEmpIndex + 1)
+          else {
+            setSpEmpIndex(0)
+            setScreen('spSchedule')
+          }
+        }}
+        onBack={() => setScreen('spEmployees')}
+      />
+    ),
+    spSchedule: (
+      <SPTimeSlotsScreen
+        employees={company.employees}
+        index={spEmpIndex}
+        onSet={(i, schedule) => setEmployee(i, { schedule })}
+        onApplyAll={(schedule) => {
+          setCompany((c) => ({ ...c, employees: c.employees.map((e) => ({ ...e, schedule })) }))
+          setScreen('spPreview')
+        }}
+        onNext={() => {
+          if (spEmpIndex < company.employees.length - 1) setSpEmpIndex(spEmpIndex + 1)
+          else setScreen('spPreview')
+        }}
+        onBack={() => setScreen('spCoverage')}
+      />
+    ),
+    spPreview: (
+      <SPPreviewScreen
+        employees={company.employees}
+        onDone={() => setScreen('spProfile')}
+        onBack={() => setScreen('spSchedule')}
+      />
+    ),
+    spProfile: (
+      <SPProfileScreen
+        profile={company.profile}
+        onDone={(profile) => {
+          setCompany((c) => ({ ...c, profile }))
+          setScreen('spHome')
+        }}
+        onBack={() => setScreen('spPreview')}
+      />
+    ),
+    spHome: (
+      <SPHomeScreen
+        company={company}
+        orders={orders}
+        onAssign={assignJob}
+        onSwitchCustomer={switchToCustomer}
+        onSwitchWorker={switchToWorker}
+        onLogout={logout}
+      />
     ),
   }
 
   const activeOrders = orders.filter(isActive).length
-  const newRequests = orders.filter((o) => o.state === 'scheduled').length
+  const newRequests = workerOrders.filter((o) => o.state === 'scheduled').length
   const providerAlerts = orders.filter((o) =>
     ['scheduled', 'approved', 'awaiting_payment'].includes(o.state),
   ).length

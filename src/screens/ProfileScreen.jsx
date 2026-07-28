@@ -46,7 +46,7 @@ export default function ProfileScreen({ phone, onSwitchMode, onLogout }) {
           onClick={onSwitchMode}
           className="mx-3 mt-4 flex cursor-pointer items-center justify-between rounded-2xl bg-white px-4 py-3.5 text-left shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
         >
-          <span className="text-[15px] font-medium text-[#8442FF]">Switch to worker app</span>
+          <span className="text-[15px] font-medium text-[#8442FF]">Switch to service provider app</span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8442FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M8 3 4 7l4 4M4 7h13M16 21l4-4-4-4M20 17H7" />
           </svg>
