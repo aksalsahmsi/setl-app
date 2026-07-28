@@ -156,6 +156,9 @@ export default function SPRequestDetailScreen({ order, employees = [], onAssign,
                       >
                         {e.available ? `On shift ${weekday}` : `Off ${weekday}`}
                       </span>
+                      {e.availableNow && (
+                        <span className="rounded-full bg-[#EDE4FD] px-2 py-0.5 text-[10px] font-medium text-[#8442FF]">Online now</span>
+                      )}
                     </div>
                   </div>
                   <span className="shrink-0 rounded-full bg-[#8442FF] px-3 py-1.5 text-xs font-medium text-white">

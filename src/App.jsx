@@ -25,9 +25,9 @@ import WaitingApprovalScreen from './screens/provider/WaitingApprovalScreen.jsx'
 import ProviderRatingsScreen from './screens/provider/ProviderRatingsScreen.jsx'
 import ProviderNotificationsScreen from './screens/provider/ProviderNotificationsScreen.jsx'
 import ProviderAccountScreen from './screens/provider/ProviderAccountScreen.jsx'
+import ProviderAvailabilityScreen from './screens/provider/ProviderAvailabilityScreen.jsx'
 import SPEmployeesScreen from './screens/sp/SPEmployeesScreen.jsx'
 import SPCoverageScreen from './screens/sp/SPCoverageScreen.jsx'
-import SPTimeSlotsScreen from './screens/sp/SPTimeSlotsScreen.jsx'
 import SPProfileScreen from './screens/sp/SPProfileScreen.jsx'
 import SPDoneScreen from './screens/sp/SPDoneScreen.jsx'
 import SPHomeScreen from './screens/sp/SPHomeScreen.jsx'
@@ -39,7 +39,7 @@ import SPAccountScreen from './screens/sp/SPAccountScreen.jsx'
 import TabBar from './components/TabBar.jsx'
 import ProviderTabBar from './components/ProviderTabBar.jsx'
 import SPTabBar from './components/SPTabBar.jsx'
-import { SERVICES, PROVIDER_ME, emptyCompany, seedServicePricing } from './data/providers.js'
+import { SERVICES, PROVIDER_ME, emptyCompany, seedServicePricing, defaultAvailability } from './data/providers.js'
 import WizardScreen from './screens/WizardScreen.jsx'
 import { advance, createOrder, isActive, recordEvent, seedOrderIds, transition } from './data/orders.js'
 
@@ -454,6 +454,13 @@ function App() {
     notify(`Assigned to ${employee.name}`)
   }
 
+  // The worker edits their own availability, stored on their employee record
+  // so the SP sees it live when assigning.
+  function updateWorker(patch) {
+    const idx = company.employees.findIndex((e) => e.name === PROVIDER_ME.name)
+    if (idx >= 0) setEmployee(idx, patch)
+  }
+
   // Open a request on the SP detail screen, remembering which list to return to.
   function openSpDetail(order, from) {
     setSpDetailId(order.id)
@@ -754,7 +761,22 @@ function App() {
     providerRatings: <ProviderRatingsScreen />,
     providerNotifications: <ProviderNotificationsScreen orders={workerOrders} />,
     providerAccount: (
-      <ProviderAccountScreen orders={workerOrders} onSwitchToCustomer={switchToCustomer} onLogout={logout} />
+      <ProviderAccountScreen
+        orders={workerOrders}
+        availableNow={workerEmployee?.availableNow ?? true}
+        onOpenAvailability={() => setScreen('providerAvailability')}
+        onSwitchToCustomer={switchToCustomer}
+        onLogout={logout}
+      />
+    ),
+    providerAvailability: (
+      <ProviderAvailabilityScreen
+        availability={workerEmployee?.availability ?? defaultAvailability()}
+        availableNow={workerEmployee?.availableNow ?? true}
+        onSetAvailability={(availability) => updateWorker({ availability })}
+        onSetAvailableNow={(availableNow) => updateWorker({ availableNow })}
+        onBack={() => setScreen('providerAccount')}
+      />
     ),
     // Service Provider (company) app
     spChooseService: (
@@ -770,7 +792,7 @@ function App() {
       <SPEmployeesScreen
         title={company.services?.[0] ?? 'Employees'}
         employees={company.employees}
-        onAdd={(emp) => setCompany((c) => ({ ...c, employees: [...c.employees, emp] }))}
+        onAdd={(emp) => setCompany((c) => ({ ...c, employees: [...c.employees, { coverage: 15, availableNow: true, availability: defaultAvailability(), ...emp }] }))}
         onUpdate={(id, patch) => setCompany((c) => ({ ...c, employees: c.employees.map((e) => (e.id === id ? { ...e, ...patch } : e)) }))}
         onRemove={(id) => setCompany((c) => ({ ...c, employees: c.employees.filter((e) => e.id !== id) }))}
         onContinue={() => {
@@ -788,32 +810,16 @@ function App() {
         onApplyAll={(km) => {
           setCompany((c) => ({ ...c, employees: c.employees.map((e) => ({ ...e, coverage: km })) }))
           setSpEmpIndex(0)
-          setScreen('spSchedule')
+          setScreen('spProfile')
         }}
         onNext={() => {
           if (spEmpIndex < company.employees.length - 1) setSpEmpIndex(spEmpIndex + 1)
           else {
             setSpEmpIndex(0)
-            setScreen('spSchedule')
+            setScreen('spProfile')
           }
         }}
         onBack={() => setScreen('spEmployees')}
-      />
-    ),
-    spSchedule: (
-      <SPTimeSlotsScreen
-        employees={company.employees}
-        index={spEmpIndex}
-        onSet={(i, schedule) => setEmployee(i, { schedule })}
-        onApplyAll={(schedule) => {
-          setCompany((c) => ({ ...c, employees: c.employees.map((e) => ({ ...e, schedule })) }))
-          setScreen('spProfile')
-        }}
-        onNext={() => {
-          if (spEmpIndex < company.employees.length - 1) setSpEmpIndex(spEmpIndex + 1)
-          else setScreen('spProfile')
-        }}
-        onBack={() => setScreen('spCoverage')}
       />
     ),
     spProfile: (
@@ -823,7 +829,7 @@ function App() {
           setCompany((c) => ({ ...c, profile }))
           setScreen('spDone')
         }}
-        onBack={() => setScreen('spSchedule')}
+        onBack={() => setScreen('spCoverage')}
       />
     ),
     spDone: <SPDoneScreen onDone={() => setScreen('spHome')} />,
@@ -869,7 +875,7 @@ function App() {
         title="Employees"
         manage
         employees={company.employees}
-        onAdd={(emp) => setCompany((c) => ({ ...c, employees: [...c.employees, emp] }))}
+        onAdd={(emp) => setCompany((c) => ({ ...c, employees: [...c.employees, { coverage: 15, availableNow: true, availability: defaultAvailability(), ...emp }] }))}
         onUpdate={(id, patch) => setCompany((c) => ({ ...c, employees: c.employees.map((e) => (e.id === id ? { ...e, ...patch } : e)) }))}
         onRemove={(id) => setCompany((c) => ({ ...c, employees: c.employees.filter((e) => e.id !== id) }))}
         onContinue={() => setScreen('spHome')}

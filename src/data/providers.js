@@ -495,9 +495,6 @@ export function seedServicePricing(services = []) {
   return services.reduce((acc, s) => ({ ...acc, [s]: defaultTasksFor(s) }), {})
 }
 
-// Days offered in the schedule From/To dropdowns.
-export const SCHEDULE_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-
 // ---- Dispatch matching (SP assign) ----
 // The SP collects each worker's coverage radius + weekly schedule in
 // onboarding; these helpers put that data to work when assigning a job.
@@ -520,8 +517,8 @@ export function jobWeekday(order) {
   return ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][d.getDay()]
 }
 
-// Does a worker's weekly schedule include the given weekday? A worker with no
-// schedule set is treated as flexible (available).
+// Legacy: does an old block-style schedule include the given weekday?
+// (Kept only for companies saved before workers owned their availability.)
 function scheduleCoversDay(schedule, weekday) {
   if (!schedule?.length) return true
   const wi = DAY_ORDER.indexOf(weekday)
@@ -532,8 +529,19 @@ function scheduleCoversDay(schedule, weekday) {
   })
 }
 
-// Annotate a company's workers for a specific job — who covers the area and
-// is on shift that day — and rank the best matches first.
+// Is a worker on shift on a given weekday? Workers own their availability (a
+// per-day on/off with time windows); fall back to the legacy block schedule,
+// then to "flexible" if neither is set.
+export function employeeAvailableOn(e, weekday) {
+  if (Array.isArray(e?.availability)) {
+    const day = e.availability.find((a) => a.day === weekday)
+    return day ? !!day.on : false
+  }
+  return scheduleCoversDay(e?.schedule, weekday)
+}
+
+// Annotate a company's workers for a specific job — who covers the area, is
+// on shift that day, and is online now — and rank the best matches first.
 export function rankWorkersForJob(employees, order) {
   const distanceKm = jobDistanceKm(order)
   const weekday = jobWeekday(order)
@@ -541,7 +549,8 @@ export function rankWorkersForJob(employees, order) {
     .map((e) => {
       const coverage = e.coverage ?? 15
       const inRange = coverage >= distanceKm
-      const available = scheduleCoversDay(e.schedule, weekday)
+      const available = employeeAvailableOn(e, weekday)
+      const availableNow = !!e.availableNow
       return {
         ...e,
         coverage,
@@ -549,18 +558,29 @@ export function rankWorkersForJob(employees, order) {
         weekday,
         inRange,
         available,
-        score: (inRange ? 2 : 0) + (available ? 1 : 0),
+        availableNow,
+        score: (inRange ? 2 : 0) + (available ? 1 : 0) + (availableNow ? 1 : 0),
       }
     })
     .sort((a, b) => b.score - a.score)
 }
 
-// A fresh employee's default weekly schedule (matches the mockup defaults).
-export function defaultSchedule() {
-  return [
-    { from: 'Monday', to: 'Thursday', slots: [{ from: '9:00 AM', to: '3:30 PM' }, { from: '5:00 PM', to: '9:00 PM' }] },
-    { from: 'Friday', to: 'Friday', slots: [{ from: '9:00 AM', to: '12:30 PM' }] },
-  ]
+// Times offered in the availability from/to dropdowns.
+export const AVAILABILITY_TIMES = [
+  '6:00 AM', '7:00 AM', '8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
+  '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM', '6:00 PM', '7:00 PM',
+  '8:00 PM', '9:00 PM', '10:00 PM',
+]
+
+// A fresh worker's default availability: on weekdays 9am–6pm, weekend off.
+// One entry per weekday with an on/off flag and one or more time windows —
+// workers add/remove windows and toggle days in the worker app.
+export function defaultAvailability() {
+  return DAY_ORDER.map((day) => ({
+    day,
+    on: day !== 'Saturday' && day !== 'Sunday',
+    windows: [{ from: '9:00 AM', to: '6:00 PM' }],
+  }))
 }
 
 // A fresh, empty SP company profile the onboarding fills in.
