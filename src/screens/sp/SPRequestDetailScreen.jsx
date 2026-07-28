@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import GradientHeader from '../../components/GradientHeader.jsx'
-import { statusLabel } from '../../data/orders.js'
+import { isActive, statusLabel } from '../../data/orders.js'
 import { CUSTOMER_ME, jobDistanceKm, jobWeekday, rankWorkersForJob } from '../../data/providers.js'
 
 function orderNo(o) {
@@ -22,6 +23,7 @@ const STATUS_STYLE = {
 // who actually covers the area and is on shift that day (using the coverage +
 // schedule collected in onboarding).
 export default function SPRequestDetailScreen({ order, employees = [], onAssign, onBack }) {
+  const [reassigning, setReassigning] = useState(false)
   if (!order) return null
 
   const money = order.amountDue ?? order.total ?? 0
@@ -29,7 +31,14 @@ export default function SPRequestDetailScreen({ order, employees = [], onAssign,
   const distanceKm = jobDistanceKm(order)
   const weekday = jobWeekday(order)
   const unassigned = order.state === 'scheduled' && !order.assignedName
+  const canReassign = !!order.assignedName && isActive(order) // still in flight → can swap worker
+  const showPicker = unassigned || reassigning
   const ranked = rankWorkersForJob(employees, order)
+
+  function assign(worker) {
+    onAssign(order.id, worker)
+    setReassigning(false)
+  }
 
   return (
     <GradientHeader title={orderNo(order)} onBack={onBack} sheetClassName="bg-[#F5F4F7]">
@@ -104,22 +113,41 @@ export default function SPRequestDetailScreen({ order, employees = [], onAssign,
 
         {/* Assignment */}
         <h2 className="mt-5 mb-2 px-1 text-sm font-semibold text-gray-500">
-          {unassigned ? `Assign a worker · ${weekday}` : 'Assigned worker'}
+          {showPicker ? `${unassigned ? 'Assign' : 'Reassign'} a worker · ${weekday}` : 'Assigned worker'}
         </h2>
 
-        {order.assignedName && (
+        {order.assignedName && !reassigning && (
           <div className="mb-3 flex items-center gap-3 rounded-2xl bg-white p-4 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0FA3A3] text-sm font-bold text-white">
               {order.assignedName[0].toUpperCase()}
             </div>
-            <div>
+            <div className="grow">
               <p className="text-sm font-medium text-black">{order.assignedName}</p>
               <p className="text-xs text-gray-400">On this job</p>
             </div>
+            {canReassign && (
+              <button
+                type="button"
+                onClick={() => setReassigning(true)}
+                className="shrink-0 cursor-pointer rounded-full border border-[#8442FF] px-3 py-1.5 text-xs font-medium text-[#8442FF] active:bg-[#F3EDFE]"
+              >
+                Change
+              </button>
+            )}
           </div>
         )}
 
-        {unassigned &&
+        {reassigning && (
+          <button
+            type="button"
+            onClick={() => setReassigning(false)}
+            className="mb-2 cursor-pointer text-xs font-medium text-gray-400 underline"
+          >
+            Cancel — keep {order.assignedName}
+          </button>
+        )}
+
+        {showPicker &&
           (employees.length === 0 ? (
             <p className="rounded-2xl bg-white p-5 text-center text-sm text-gray-400 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
               Add employees before you can assign this job.
@@ -130,9 +158,9 @@ export default function SPRequestDetailScreen({ order, employees = [], onAssign,
                 <button
                   key={e.id}
                   type="button"
-                  onClick={() => onAssign(order.id, e)}
+                  onClick={() => assign(e)}
                   className={`flex w-full cursor-pointer items-center gap-3 rounded-2xl border bg-white p-3 text-left shadow-[0_2px_8px_rgba(0,0,0,0.06)] active:bg-gray-50 ${
-                    e.inRange && e.available ? 'border-[#D9CBF7]' : 'border-transparent'
+                    e.name === order.assignedName ? 'border-[#0FA3A3]' : e.inRange && e.available ? 'border-[#D9CBF7]' : 'border-transparent'
                   }`}
                 >
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white" style={{ background: e.color }}>
@@ -161,8 +189,8 @@ export default function SPRequestDetailScreen({ order, employees = [], onAssign,
                       )}
                     </div>
                   </div>
-                  <span className="shrink-0 rounded-full bg-[#8442FF] px-3 py-1.5 text-xs font-medium text-white">
-                    Assign
+                  <span className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium text-white ${e.name === order.assignedName ? 'bg-[#0FA3A3]' : 'bg-[#8442FF]'}`}>
+                    {e.name === order.assignedName ? 'Current' : 'Assign'}
                   </span>
                 </button>
               ))}
