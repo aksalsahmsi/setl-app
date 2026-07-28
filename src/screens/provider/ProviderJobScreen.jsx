@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CUSTOMER_ME, getPartCatalog } from '../../data/providers.js'
+import { CUSTOMER_ME } from '../../data/providers.js'
 import GradientButton from '../../components/GradientButton.jsx'
 
 function Stepper({ value, onDec, onInc, suffix }) {
@@ -22,8 +22,7 @@ const REPORT_REASONS = [
 // ("Add products" in the mockup): the worker adds the parts needed, sets
 // price + quantity, and sends the estimate for the customer to approve.
 // For a direct / approved job it's a simple "mark as done".
-export default function ProviderJobScreen({ order, onSendEstimate, onDone, onReport, onDial, onBack }) {
-  const catalog = order ? getPartCatalog(order.serviceKey) : []
+export default function ProviderJobScreen({ order, catalog = [], onSendEstimate, onDone, onReport, onDial, onBack }) {
   const [lines, setLines] = useState([]) // [{ name, icon, market, unitPrice, qty }]
   const [customPrice, setCustomPrice] = useState(45)
   const [customQty, setCustomQty] = useState(1)

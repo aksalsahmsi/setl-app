@@ -434,49 +434,64 @@ export const EMPLOYEE_COLORS = ['#7C3AED', '#0FA3A3', '#E0442B', '#2563EB', '#B5
 // difficulty tiers). Each SP service has a default job list with typical
 // prices; the SP tweaks the numbers and can add/remove jobs on the Services
 // screen. `afterInspection: true` jobs are quoted on site, not upfront.
+// `market` is the typical Setl range for that job (a benchmark independent of
+// what this company charges), so the customer's price-verdict chip stays
+// honest: if the SP prices above the range, the customer sees "Above typical
+// Setl range".
 export const SP_SERVICE_TASKS = {
   Plumber: [
-    { label: 'Fix / replace tap or faucet', price: 90 },
-    { label: 'Unblock drain or sink', price: 120 },
-    { label: 'Fix leaking pipe', price: 100 },
-    { label: 'Install / replace water heater', price: 250 },
-    { label: 'Fix toilet or flush', price: 150 },
-    { label: 'Call-out / inspection', price: 50 },
+    { label: 'Fix / replace tap or faucet', price: 90, market: [70, 110] },
+    { label: 'Unblock drain or sink', price: 120, market: [90, 150] },
+    { label: 'Fix leaking pipe', price: 100, market: [80, 130] },
+    { label: 'Install / replace water heater', price: 250, market: [200, 320] },
+    { label: 'Fix toilet or flush', price: 150, market: [120, 190] },
+    { label: 'Call-out / inspection', price: 50, market: [30, 60] },
   ],
   Electrician: [
-    { label: 'Light fixture installation', price: 60 },
-    { label: 'Socket or switch replacement', price: 40 },
-    { label: 'Ceiling fan installation', price: 90 },
-    { label: 'Breaker replacement', price: 80 },
-    { label: 'Wiring repair', price: 120 },
-    { label: 'Call-out / inspection', price: 40 },
+    { label: 'Light fixture installation', price: 60, market: [45, 80] },
+    { label: 'Socket or switch replacement', price: 40, market: [30, 55] },
+    { label: 'Ceiling fan installation', price: 90, market: [70, 120] },
+    { label: 'Breaker replacement', price: 80, market: [60, 100] },
+    { label: 'Wiring repair', price: 120, market: [90, 150] },
+    { label: 'Call-out / inspection', price: 40, market: [25, 55] },
   ],
   'Network Technician': [
-    { label: 'Wi-Fi optimization', price: 100 },
-    { label: 'Coverage extender setup', price: 120 },
-    { label: 'New router installation', price: 80 },
-    { label: 'New cabling point', price: 70 },
-    { label: 'Call-out / inspection', price: 35 },
+    { label: 'Wi-Fi optimization', price: 100, market: [80, 130] },
+    { label: 'Coverage extender setup', price: 120, market: [100, 150] },
+    { label: 'New router installation', price: 80, market: [60, 100] },
+    { label: 'New cabling point', price: 70, market: [50, 90] },
+    { label: 'Call-out / inspection', price: 35, market: [25, 50] },
   ],
   'Smart Home Installation': [
-    { label: 'Smart device installation', price: 90 },
-    { label: 'Security camera installation', price: 120 },
-    { label: 'Smart lock installation', price: 150 },
-    { label: 'Full smart-home setup', price: 300 },
-    { label: 'Call-out / consultation', price: 50 },
+    { label: 'Smart device installation', price: 90, market: [70, 120] },
+    { label: 'Security camera installation', price: 120, market: [100, 160] },
+    { label: 'Smart lock installation', price: 150, market: [120, 190] },
+    { label: 'Full smart-home setup', price: 300, market: [250, 380] },
+    { label: 'Call-out / consultation', price: 50, market: [35, 70] },
   ],
   'Car Cleaning': [
-    { label: 'Sedan wash', price: 30 },
-    { label: 'SUV wash', price: 45 },
-    { label: 'Interior deep clean', price: 80 },
-    { label: 'Full detail', price: 150 },
+    { label: 'Sedan wash', price: 30, market: [20, 45] },
+    { label: 'SUV wash', price: 45, market: [35, 60] },
+    { label: 'Interior deep clean', price: 80, market: [60, 100] },
+    { label: 'Full detail', price: 150, market: [120, 190] },
   ],
   'Pest Control': [
-    { label: 'General pest spray', price: 120 },
-    { label: 'Cockroach treatment', price: 150 },
-    { label: 'Bed bug treatment', price: 300 },
-    { label: 'Termite inspection', price: 100 },
+    { label: 'General pest spray', price: 120, market: [90, 150] },
+    { label: 'Cockroach treatment', price: 150, market: [120, 190] },
+    { label: 'Bed bug treatment', price: 300, market: [250, 380] },
+    { label: 'Termite inspection', price: 100, market: [80, 130] },
   ],
+}
+
+// Map a customer-facing service key (order.serviceKey) to the SP service label
+// used in the company's price list, so the worker's estimate builder can draw
+// from the same prices the SP set.
+export const SERVICE_KEY_TO_SP_LABEL = {
+  plumber: 'Plumber',
+  electrician: 'Electrician',
+  network: 'Network Technician',
+  technician: 'Smart Home Installation',
+  carwash: 'Car Cleaning',
 }
 
 // The default job list for a service (a copy, so edits don't mutate the
@@ -493,6 +508,27 @@ export function defaultTasksFor(serviceLabel) {
 // the services it offers.
 export function seedServicePricing(services = []) {
   return services.reduce((acc, s) => ({ ...acc, [s]: defaultTasksFor(s) }), {})
+}
+
+// The parts/jobs a worker adds when building an on-site estimate, priced from
+// the SP company's own list for that trade (so the customer approves exactly
+// what the SP set). Falls back to the generic per-trade catalog when the
+// company hasn't priced this service.
+export function estimateCatalog(company, serviceKey) {
+  const label = SERVICE_KEY_TO_SP_LABEL[serviceKey]
+  const tasks = label ? company?.servicePricing?.[label] : null
+  if (tasks?.length) {
+    return tasks.map((t) => {
+      const price = Number(t.price) || 0
+      return {
+        name: t.label,
+        price,
+        icon: 'tool',
+        market: t.market ?? [Math.round(price * 0.85), Math.round(price * 1.15)],
+      }
+    })
+  }
+  return getPartCatalog(serviceKey)
 }
 
 // ---- Dispatch matching (SP assign) ----

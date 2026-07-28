@@ -39,7 +39,7 @@ import SPAccountScreen from './screens/sp/SPAccountScreen.jsx'
 import TabBar from './components/TabBar.jsx'
 import ProviderTabBar from './components/ProviderTabBar.jsx'
 import SPTabBar from './components/SPTabBar.jsx'
-import { SERVICES, PROVIDER_ME, emptyCompany, seedServicePricing, defaultAvailability } from './data/providers.js'
+import { SERVICES, PROVIDER_ME, emptyCompany, seedServicePricing, defaultAvailability, estimateCatalog } from './data/providers.js'
 import WizardScreen from './screens/WizardScreen.jsx'
 import { advance, createOrder, isActive, recordEvent, seedOrderIds, transition } from './data/orders.js'
 
@@ -744,6 +744,7 @@ function App() {
     providerJob: (
       <ProviderJobScreen
         order={workerOrder}
+        catalog={estimateCatalog(company, workerOrder?.serviceKey)}
         onSendEstimate={sendEstimate}
         onDone={completeJob}
         onReport={reportJob}
