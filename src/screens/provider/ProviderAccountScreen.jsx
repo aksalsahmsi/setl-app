@@ -31,7 +31,7 @@ export default function ProviderAccountScreen({ orders = [], onSwitchToCustomer,
       <div className="-mt-5 mx-3 grid grid-cols-2 gap-3">
         <div className="rounded-2xl bg-white p-4 text-center shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
           <p className="text-2xl font-bold text-black">{earnings} AED</p>
-          <p className="text-xs text-gray-400">Earnings (this device)</p>
+          <p className="text-xs text-gray-400">Earnings</p>
         </div>
         <div className="rounded-2xl bg-white p-4 text-center shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
           <p className="text-2xl font-bold text-black">{jobsDone}</p>

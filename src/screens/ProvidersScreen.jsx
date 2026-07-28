@@ -49,7 +49,7 @@ export default function ProvidersScreen({ service: serviceId, variant, onConfirm
               type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={service.providers[0]?.name}
+              placeholder="Search providers"
               className="w-full bg-transparent text-base text-black outline-none placeholder:text-[#C2C0C9]"
             />
           </div>
