@@ -30,7 +30,14 @@ export default function CustomerLogin({ onContinue, asProvider = false, onSwitch
           xmlns="http://www.w3.org/2000/svg"
           preserveAspectRatio="none"
         >
-          <path d="M0 0H375V113L187.5 191L0 113V0Z" fill="#8442FF" />
+          <defs>
+            <linearGradient id="setlBrand" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0.01" stopColor="#F15CFA" />
+              <stop offset="0.56" stopColor="#7E43FF" />
+              <stop offset="1" stopColor="#6C63FF" />
+            </linearGradient>
+          </defs>
+          <path d="M0 0H375V113L187.5 191L0 113V0Z" fill="url(#setlBrand)" />
         </svg>
         <div className="absolute inset-x-0 top-[38%] flex items-center justify-center gap-2">
           <SetlLogo className="h-[85px] w-[60px]" />

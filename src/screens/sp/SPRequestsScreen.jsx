@@ -24,7 +24,7 @@ const STATUS_STYLE = {
 export default function SPRequestsScreen({ title, heading, orders, onOpen, onBack }) {
   return (
     <div className="font-poppins min-h-screen bg-[#F5F4F7] pb-24">
-      <div className="relative bg-linear-[90deg,#C05CF7,#8442FF] px-4 pt-5 pb-5">
+      <div className="relative brand-header px-4 pt-5 pb-5">
         <button type="button" onClick={onBack} aria-label="Go back" className="absolute top-4 left-2 cursor-pointer p-2 text-white">
           <svg width="10" height="18" viewBox="0 0 10 18" fill="none"><path d="M9 1 2 9l7 8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" /></svg>
         </button>

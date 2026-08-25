@@ -58,7 +58,7 @@ export default function SPEmployeesScreen({ title, employees, onAdd, onUpdate, o
         <div className="mt-4 flex flex-col gap-4">
           {employees.map((e) => (
             <div key={e.id} className="overflow-hidden rounded-2xl bg-white shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
-              <div className="relative h-16 bg-linear-[90deg,#C05CF7,#8442FF]">
+              <div className="relative h-16 brand-header">
                 <div className="absolute -bottom-7 left-1/2 flex h-16 w-16 -translate-x-1/2 items-center justify-center rounded-full border-4 border-white text-xl font-bold text-white" style={{ background: e.color }}>
                   {e.name[0].toUpperCase()}
                 </div>

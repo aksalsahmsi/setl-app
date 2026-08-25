@@ -6,7 +6,7 @@ export default function SPDoneScreen({ onDone }) {
     <button
       type="button"
       onClick={onDone}
-      className="font-poppins flex min-h-screen w-full cursor-pointer flex-col items-center justify-center bg-linear-[160deg,#8442FF,#C05CF7] px-8 text-center"
+      className="font-poppins flex min-h-screen w-full cursor-pointer flex-col items-center justify-center brand-splash px-8 text-center"
     >
       <div className="pop-enter flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-lg">
         <svg width="46" height="36" viewBox="0 0 24 18" fill="none">

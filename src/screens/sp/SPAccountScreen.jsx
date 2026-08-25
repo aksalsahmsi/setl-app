@@ -7,7 +7,7 @@ export default function SPAccountScreen({ company, orders = [], onOpenEmployees,
 
   return (
     <div className="font-poppins min-h-screen bg-[#F5F4F7] pb-24">
-      <div className="bg-linear-[90deg,#C05CF7,#8442FF] px-4 pt-8 pb-10 text-white">
+      <div className="brand-header px-4 pt-8 pb-10 text-white">
         <div className="flex items-center gap-4">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/25 text-2xl font-semibold">{name[0]?.toUpperCase()}</div>
           <div>

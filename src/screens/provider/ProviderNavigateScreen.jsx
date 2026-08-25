@@ -12,7 +12,7 @@ export default function ProviderNavigateScreen({ order, onArrived, onBack }) {
   const etaMin = Math.round(distanceKm * 2.2)
   return (
     <div className="font-poppins flex min-h-screen flex-col bg-white">
-      <div className="relative shrink-0 bg-linear-[90deg,#C05CF7,#8442FF] pt-4 pb-10">
+      <div className="relative shrink-0 brand-header pt-4 pb-10">
         <button type="button" onClick={onBack} aria-label="Go back" className="absolute top-3 left-2 cursor-pointer p-2 text-white">
           <svg width="10" height="18" viewBox="0 0 10 18" fill="none">
             <path d="M9 1 2 9l7 8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />

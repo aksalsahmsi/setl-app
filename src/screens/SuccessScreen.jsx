@@ -35,7 +35,7 @@ function content({ variant, total, credit }) {
 export default function SuccessScreen({ variant, total, credit, onDone, onTrack }) {
   const { title, body, track } = content({ variant, total, credit })
   return (
-    <div className="font-poppins flex min-h-screen flex-col items-center justify-center bg-linear-[180deg,#C05CF7,#8442FF] px-6 text-center text-white">
+    <div className="font-poppins flex min-h-screen flex-col items-center justify-center brand-splash px-6 text-center text-white">
       <div className="pop-enter flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-lg">
         <svg width="46" height="36" viewBox="0 0 24 18" fill="none">
           <path

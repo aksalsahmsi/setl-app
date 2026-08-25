@@ -20,7 +20,7 @@ function TileIcon({ icon }) {
 export default function SPHomeScreen({ company, counts, onOpen }) {
   return (
     <div className="font-poppins min-h-screen bg-[#F5F4F7] pb-24">
-      <div className="bg-linear-[90deg,#C05CF7,#8442FF] px-4 pt-8 pb-8 text-white">
+      <div className="brand-header px-4 pt-8 pb-8 text-white">
         <p className="text-xs text-white/80">Service Provider</p>
         <p className="text-xl font-semibold">{company.profile?.name || 'Your company'}</p>
         <p className="mt-0.5 text-sm text-white/85">

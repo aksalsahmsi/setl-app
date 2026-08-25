@@ -10,7 +10,7 @@ export default function WaitingApprovalScreen({ order, onStartWork, onBack }) {
 
   if (approved || declined) {
     return (
-      <div className={`font-poppins flex min-h-screen flex-col items-center justify-center px-6 text-center text-white ${approved ? 'bg-linear-[180deg,#C05CF7,#8442FF]' : 'bg-linear-[180deg,#8A8A96,#5B5B66]'}`}>
+      <div className={`font-poppins flex min-h-screen flex-col items-center justify-center px-6 text-center text-white ${approved ? 'brand-splash' : 'bg-linear-[180deg,#8A8A96,#5B5B66]'}`}>
         <div className="pop-enter flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-lg">
           {approved ? (
             <svg width="46" height="36" viewBox="0 0 24 18" fill="none">
@@ -40,7 +40,7 @@ export default function WaitingApprovalScreen({ order, onStartWork, onBack }) {
   }
 
   return (
-    <div className="font-poppins flex min-h-screen flex-col items-center justify-center bg-linear-[180deg,#7C3AED,#C05CF7] px-8 text-center">
+    <div className="font-poppins flex min-h-screen flex-col items-center justify-center brand-splash px-8 text-center">
       <h1 className="text-4xl leading-tight font-bold text-white">
         Waiting for<br />Customer<br />approval
       </h1>

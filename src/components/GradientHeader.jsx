@@ -3,7 +3,7 @@
 export default function GradientHeader({ title, onBack, children, sheetClassName = 'bg-white' }) {
   return (
     <div className="flex min-h-screen flex-col">
-      <div className="relative shrink-0 bg-linear-[90deg,#C05CF7,#8442FF] pt-4 pb-10">
+      <div className="relative shrink-0 brand-header pt-4 pb-10">
         {onBack && (
           <button
             type="button"
