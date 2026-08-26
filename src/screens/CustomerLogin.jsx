@@ -22,16 +22,16 @@ export default function CustomerLogin({ onContinue, asProvider = false, onSwitch
 
   return (
     <div className="font-poppins flex min-h-screen w-full flex-col bg-white">
-      {/* Gradient header with the logo; the white sheet below cuts through it
-          with rounded top corners (same pattern as the rest of the app). */}
-      <div className="brand-header flex shrink-0 items-center justify-center gap-2 pt-24 pb-20">
+      {/* Sharp rectangular gradient header with the logo (matches the Figma
+          login: a flat band, not the rounded cut-through used elsewhere). */}
+      <div className="brand-header flex shrink-0 items-center justify-center gap-2 pt-20 pb-16">
         <SetlLogo className="h-[85px] w-[60px]" />
         <span className="font-league-spartan text-[40px] leading-none font-semibold text-white">
           Setl
         </span>
       </div>
 
-      <div className="-mt-8 flex grow flex-col rounded-t-[30px] bg-white px-4 pt-8">
+      <div className="flex grow flex-col px-4 pt-8">
         <h1 className="text-center text-xl font-semibold tracking-[0.025em] text-black">
           Welcome Back
         </h1>
