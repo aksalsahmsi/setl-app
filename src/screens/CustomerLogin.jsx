@@ -32,9 +32,8 @@ export default function CustomerLogin({ onContinue, asProvider = false, onSwitch
         >
           <defs>
             <linearGradient id="setlBrand" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0.01" stopColor="#F15CFA" />
-              <stop offset="0.56" stopColor="#7E43FF" />
-              <stop offset="1" stopColor="#6C63FF" />
+              <stop offset="0" stopColor="#AB4FEC" />
+              <stop offset="1" stopColor="#6E5CEA" />
             </linearGradient>
           </defs>
           <path d="M0 0H375V113L187.5 191L0 113V0Z" fill="url(#setlBrand)" />
