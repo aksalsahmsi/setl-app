@@ -16,8 +16,8 @@ export default function ProviderAccountScreen({ orders = [], availableNow, onOpe
 
   return (
     <div className="font-poppins flex min-h-screen flex-col bg-[#F5F4F7] pb-24">
-      <div className="brand-header px-4 pt-8 pb-10 text-white">
-        <div className="flex items-center gap-4">
+      <div className="brand-header px-4 pt-8 pb-10 text-center text-white">
+        <div className="flex flex-col items-center gap-2">
           <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/25 text-2xl font-semibold" style={{ background: PROVIDER_ME.color }}>
             {PROVIDER_ME.name[0]}
           </div>
