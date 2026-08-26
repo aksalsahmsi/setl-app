@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import SplashScreen from './screens/SplashScreen.jsx'
 import CustomerLogin from './screens/CustomerLogin.jsx'
 import OtpScreen from './screens/OtpScreen.jsx'
 import LocationScreen from './screens/LocationScreen.jsx'
@@ -87,7 +88,7 @@ function loadCompany() {
 // worker, so there's no separate worker self-onboarding).
 function App() {
   const [mode, setMode] = useState('customer') // 'customer' | 'provider'
-  const [screen, setScreen] = useState('login')
+  const [screen, setScreen] = useState('splash') // brand splash -> login
   const [phone, setPhone] = useState('')
   const [counts, setCounts] = useState({ refill: 1, clean: 1 })
   const [hours, setHours] = useState(2) // hourly services (house cleaning)
@@ -494,6 +495,7 @@ function App() {
   }
 
   const screens = {
+    splash: <SplashScreen onDone={() => setScreen('login')} />,
     login: (
       <CustomerLogin
         asProvider={mode !== 'customer'}
