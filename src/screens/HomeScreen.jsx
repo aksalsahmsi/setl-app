@@ -41,8 +41,8 @@ function ServiceCard({ service, onClick }) {
 export default function HomeScreen({ onOpenService }) {
   return (
     <div className="font-poppins flex min-h-screen flex-col bg-[#F2F1F4]">
-      {/* Purple gradient header */}
-      <div className="relative shrink-0 brand-header pt-5 pb-16">
+      {/* Purple gradient header with a rounded bottom (rounded-rectangle band) */}
+      <div className="relative shrink-0 brand-header rounded-b-[30px] pt-5 pb-16">
         <div className="flex items-center justify-between px-4">
           <button type="button" aria-label="Menu" className="cursor-pointer p-1">
             <svg width="26" height="20" viewBox="0 0 26 20" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round">
