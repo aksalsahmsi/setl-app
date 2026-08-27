@@ -101,7 +101,7 @@ export default function ProviderHomeScreen({ orders, onOpenOrder, employee, comp
   return (
     <div className="font-poppins min-h-screen bg-[#F5F4F7] pb-24">
       {/* Header with the worker's identity */}
-      <div className="relative brand-header pb-10">
+      <div className="relative brand-header rounded-b-[30px] pb-10">
         <div className="flex flex-col items-center pt-10">
           <div
             className="flex h-20 w-20 items-center justify-center rounded-full border-4 border-white/40 text-2xl font-bold text-white shadow-lg"

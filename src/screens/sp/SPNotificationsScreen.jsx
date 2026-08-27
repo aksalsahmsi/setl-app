@@ -23,7 +23,7 @@ export default function SPNotificationsScreen({ orders = [], onBack }) {
   const items = notificationsFor(orders)
   return (
     <div className="font-poppins min-h-screen bg-[#F5F4F7] pb-24">
-      <div className="relative brand-header px-4 pt-5 pb-5">
+      <div className="relative brand-header rounded-b-[30px] px-4 pt-5 pb-5">
         {onBack && (
           <button type="button" onClick={onBack} aria-label="Go back" className="absolute top-4 left-2 cursor-pointer p-2 text-white">
             <svg width="10" height="18" viewBox="0 0 10 18" fill="none"><path d="M9 1 2 9l7 8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" /></svg>
